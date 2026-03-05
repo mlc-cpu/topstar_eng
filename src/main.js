@@ -26,6 +26,15 @@ function isHomeworkTitle(title) {
   return /반\s*숙제/i.test(String(title ?? ""));
 }
 
+function hasHomeworkSignal(post) {
+  if (isHomeworkTitle(post.title)) {
+    return true;
+  }
+
+  const className = post.className || extractClassNameFromTitle(post.title);
+  return Boolean(className);
+}
+
 function postSortScore(post) {
   const dateFromPublishedAt = Date.parse(String(post.publishedAt ?? ""));
   if (Number.isFinite(dateFromPublishedAt)) {
@@ -64,12 +73,12 @@ function classSortOrder(leftClass, rightClass) {
 function selectHomeworkPostsByClass(posts, { author, perClassLimit }) {
   const normalizedAuthor = normalizeIdentity(author);
   const filtered = posts.filter((post) => {
-    if (!isHomeworkTitle(post.title)) {
+    if (!hasHomeworkSignal(post)) {
       return false;
     }
 
     const postAuthor = normalizeIdentity(post.author);
-    if (normalizedAuthor && !postAuthor.includes(normalizedAuthor)) {
+    if (normalizedAuthor && postAuthor && !postAuthor.includes(normalizedAuthor)) {
       return false;
     }
 
@@ -149,7 +158,7 @@ async function run() {
       maxPosts: config.maxPosts,
       classPostLimit: config.classPostLimit,
       homeworkAuthor: config.homeworkAuthor,
-      recentPolicy: "author-and-title-filtered-per-class-limit",
+      recentPolicy: "author-and-homework-signal-per-class-limit",
       timeZone: config.timeZone,
       pagesUrl: config.pagesUrl,
       shortUrl: config.shortUrl,

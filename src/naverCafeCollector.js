@@ -4,6 +4,7 @@ import { chromium } from "playwright";
 
 import { config } from "./config.js";
 import {
+  extractClassNameFromTitle,
   extractPostId,
   normalizeText,
   toAbsoluteNaverUrl,
@@ -131,7 +132,41 @@ async function getPostLinks(frame) {
     .filter((item) => item.url)
     .filter((item) => item.postId);
 
-  return uniqueBy(links, (item) => item.postId).slice(0, config.maxPosts);
+  const deduped = uniqueBy(links, (item) => item.postId);
+  const prioritized = prioritizeHomeworkLikeLinks(deduped);
+  return prioritized.slice(0, config.maxPosts);
+}
+
+function isLikelyHomeworkTitle(title) {
+  const normalizedTitle = normalizeText(title);
+  if (!normalizedTitle) {
+    return false;
+  }
+
+  if (/반\s*숙제/i.test(normalizedTitle)) {
+    return true;
+  }
+
+  return Boolean(extractClassNameFromTitle(normalizedTitle));
+}
+
+function prioritizeHomeworkLikeLinks(links) {
+  const likelyHomework = [];
+  const others = [];
+
+  for (const link of links) {
+    if (isLikelyHomeworkTitle(link.title)) {
+      likelyHomework.push(link);
+    } else {
+      others.push(link);
+    }
+  }
+
+  if (likelyHomework.length > 0) {
+    return likelyHomework;
+  }
+
+  return others;
 }
 
 async function getPostDetail(context, post) {
@@ -205,6 +240,27 @@ async function getPostDetail(context, post) {
   }
 }
 
+async function mapWithConcurrency(items, limit, mapper) {
+  const concurrency = Math.max(1, Math.min(limit, items.length || 1));
+  const results = new Array(items.length);
+  let cursor = 0;
+
+  async function worker() {
+    while (true) {
+      const index = cursor;
+      cursor += 1;
+      if (index >= items.length) {
+        return;
+      }
+
+      results[index] = await mapper(items[index], index);
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
+  return results;
+}
+
 export async function collectHomeworkPosts() {
   if (!config.boardUrl) {
     throw new Error("Missing required environment variable: NAVER_CAFE_BOARD_URL");
@@ -251,18 +307,23 @@ export async function collectHomeworkPosts() {
       throw loginRequiredError();
     }
 
-    const posts = [];
-    for (const link of links) {
-      try {
-        const detail = await getPostDetail(context, link);
-        if (!normalizeText(detail.bodyText)) {
-          continue;
+    const detailedPosts = await mapWithConcurrency(
+      links,
+      config.detailConcurrency,
+      async (link) => {
+        try {
+          const detail = await getPostDetail(context, link);
+          if (!normalizeText(detail.bodyText)) {
+            return null;
+          }
+          return detail;
+        } catch (error) {
+          console.error(`[collect] failed for post ${link.postId}: ${error.message}`);
+          return null;
         }
-        posts.push(detail);
-      } catch (error) {
-        console.error(`[collect] failed for post ${link.postId}: ${error.message}`);
       }
-    }
+    );
+    const posts = detailedPosts.filter(Boolean);
 
     if (config.requireLogin && posts.length < 1) {
       throw loginRequiredError();

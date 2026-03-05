@@ -23,6 +23,7 @@ export const config = {
   headless: toBool(process.env.HEADLESS, true),
   requireLogin: toBool(process.env.REQUIRE_LOGIN, true),
   maxPosts: toInt(process.env.MAX_POSTS, 80),
+  detailConcurrency: Math.min(8, Math.max(1, toInt(process.env.DETAIL_CONCURRENCY, 4))),
   classPostLimit: Math.max(1, toInt(process.env.CLASS_POST_LIMIT, 2)),
   homeworkAuthor: process.env.HOMEWORK_AUTHOR?.trim() || "그래그래그레이스",
   port: toInt(process.env.PORT, 4173),

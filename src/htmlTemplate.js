@@ -94,14 +94,10 @@ export function renderHomeworkHtml({ pageTitle }) {
         display: flex;
         align-items: center;
         gap: 8px;
-        flex-wrap: wrap;
       }
 
-      .class-picker {
-        min-height: 44px;
-        padding: 10px 12px;
-        border-radius: 999px;
-        border: 1px solid rgba(210, 225, 255, 0.35);
+      .class-picker-wrap {
+        position: relative;
       }
 
       .class-current {
@@ -111,40 +107,23 @@ export function renderHomeworkHtml({ pageTitle }) {
       }
 
       .class-options {
-        margin-top: 8px;
-        display: grid;
-        gap: 8px;
+        position: absolute;
+        left: 0;
+        top: calc(100% + 6px);
+        z-index: 15;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-width: min(90vw, 460px);
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid rgba(210, 225, 255, 0.3);
+        background: rgba(9, 17, 32, 0.96);
+        box-shadow: 0 14px 26px rgba(3, 11, 24, 0.42);
       }
 
       .class-options[hidden] {
         display: none;
-      }
-
-      .class-group {
-        display: grid;
-        gap: 6px;
-      }
-
-      .class-group-title {
-        font-size: 0.74rem;
-        font-weight: 700;
-        color: #d5e4ff;
-      }
-
-      .class-group-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .class-option {
-        min-height: 44px;
-        border-radius: 999px;
-        border: 1px solid rgba(210, 225, 255, 0.35);
-        padding: 10px 13px;
-        font-size: 0.82rem;
-        background: rgba(255, 255, 255, 0.12);
-        color: #eef4ff;
       }
 
       .class-option.active {
@@ -173,6 +152,26 @@ export function renderHomeworkHtml({ pageTitle }) {
       button:disabled {
         opacity: 0.65;
         cursor: default;
+      }
+
+      button.class-picker {
+        min-height: 32px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(210, 225, 255, 0.35);
+        font-size: 0.78rem;
+        line-height: 1.2;
+      }
+
+      button.class-option {
+        min-height: 28px;
+        border-radius: 999px;
+        border: 1px solid rgba(210, 225, 255, 0.35);
+        padding: 3px 9px;
+        font-size: 0.76rem;
+        line-height: 1.2;
+        background: rgba(255, 255, 255, 0.12);
+        color: #eef4ff;
       }
 
       .list {
@@ -321,10 +320,12 @@ export function renderHomeworkHtml({ pageTitle }) {
         <h1>${title}</h1>
         <div class="meta" id="status">데이터 로딩 중...</div>
         <div class="class-control">
-          <button id="class-picker" class="class-picker" type="button" aria-expanded="false">기본 반 설정</button>
-          <div class="class-current" id="class-current">기본 반: 전체</div>
+          <div class="class-picker-wrap">
+            <button id="class-picker" class="class-picker" type="button" aria-expanded="false">기본 반 설정</button>
+            <div class="class-options" id="class-options" hidden></div>
+          </div>
+          <div class="class-current" id="class-current">기본 반: Ace</div>
         </div>
-        <div class="class-options" id="class-options" hidden></div>
         <div class="toolbar">
           <button id="refresh">새로고침</button>
         </div>
@@ -336,31 +337,17 @@ export function renderHomeworkHtml({ pageTitle }) {
     <script>
       const STORAGE_PREFIX = "homework-check:";
       const DEFAULT_CLASS_KEY = "homework-default-class";
-      const CLASS_GROUPS = [
-        {
-          title: "월수금반",
-          options: [
-            { id: "Ace", label: "☆ Ace ☆" },
-            { id: "Star", label: "☆ Star ☆" },
-            { id: "Top", label: "☆ Top ☆" },
-            { id: "Peak", label: "☆ Peak ☆" },
-          ],
-        },
-        {
-          title: "화목반",
-          options: [
-            { id: "Champion", label: "☆ Champion ☆" },
-            { id: "Radiant", label: "☆ Radiant ☆" },
-          ],
-        },
-      ];
-      const PRESET_CLASS_IDS = CLASS_GROUPS.flatMap((group) =>
-        group.options.map((option) => option.id)
-      );
-      const PRESET_CLASS_SET = new Set(PRESET_CLASS_IDS);
-      const CLASS_LABEL_MAP = Object.fromEntries(
-        CLASS_GROUPS.flatMap((group) => group.options.map((option) => [option.id, option.label]))
-      );
+      const DEFAULT_CLASS = "Ace";
+      const CLASS_ORDER = ["Ace", "Star", "Top", "Peak", "Champion", "Radiant"];
+      const CLASS_SET = new Set(CLASS_ORDER);
+      const CLASS_LABEL_MAP = {
+        Ace: "Ace",
+        Star: "Star",
+        Top: "Top",
+        Peak: "Peak",
+        Champion: "Champion",
+        Radiant: "Radiant",
+      };
       const CLASS_ALIAS_MAP = {
         ace: "Ace",
         star: "Star",
@@ -372,7 +359,7 @@ export function renderHomeworkHtml({ pageTitle }) {
       };
       let cachedData = null;
       let classPickerOpen = false;
-      let knownClasses = [...PRESET_CLASS_IDS];
+      let knownClasses = [...CLASS_ORDER];
       let classesInPosts = [];
 
       function key(postId, itemId) {
@@ -417,19 +404,20 @@ export function renderHomeworkHtml({ pageTitle }) {
       function getDefaultClass() {
         const stored = localStorage.getItem(DEFAULT_CLASS_KEY) || "";
         const normalized = canonicalizeClassName(stored);
-        if (stored && normalized !== stored) {
-          localStorage.setItem(DEFAULT_CLASS_KEY, normalized);
+        if (normalized) {
+          if (stored !== normalized) {
+            localStorage.setItem(DEFAULT_CLASS_KEY, normalized);
+          }
+          return normalized;
         }
-        return normalized;
+
+        localStorage.setItem(DEFAULT_CLASS_KEY, DEFAULT_CLASS);
+        return DEFAULT_CLASS;
       }
 
       function setDefaultClass(className) {
-        const normalized = canonicalizeClassName(className);
-        if (normalized) {
-          localStorage.setItem(DEFAULT_CLASS_KEY, normalized);
-        } else {
-          localStorage.removeItem(DEFAULT_CLASS_KEY);
-        }
+        const normalized = canonicalizeClassName(className) || DEFAULT_CLASS;
+        localStorage.setItem(DEFAULT_CLASS_KEY, normalized);
       }
 
       function extractClassName(post) {
@@ -465,7 +453,7 @@ export function renderHomeworkHtml({ pageTitle }) {
       }
 
       function collectClassNames(posts) {
-        const seen = new Set(PRESET_CLASS_IDS);
+        const seen = new Set(CLASS_ORDER);
         const posted = new Set();
         for (const post of posts) {
           const className = extractClassName(post);
@@ -501,11 +489,6 @@ export function renderHomeworkHtml({ pageTitle }) {
       function updateClassSummary() {
         const classCurrentEl = document.getElementById("class-current");
         const defaultClass = getDefaultClass();
-        if (!defaultClass) {
-          classCurrentEl.textContent = "기본 반: 전체";
-          return;
-        }
-
         const classLabel = getClassLabel(defaultClass);
         if (classesInPosts.includes(defaultClass)) {
           classCurrentEl.textContent = "기본 반: " + classLabel;
@@ -546,61 +529,17 @@ export function renderHomeworkHtml({ pageTitle }) {
         classOptionsEl.hidden = !classPickerOpen;
         classOptionsEl.innerHTML = "";
 
-        const allGroup = document.createElement("div");
-        allGroup.className = "class-group";
-        const allList = document.createElement("div");
-        allList.className = "class-group-list";
-        allList.appendChild(
-          createClassOptionButton({ label: "전체", value: "" }, defaultClass)
+        const classSequence = [...CLASS_ORDER].concat(
+          knownClasses.filter((className) => !CLASS_SET.has(className))
         );
-        allGroup.appendChild(allList);
-        classOptionsEl.appendChild(allGroup);
 
-        for (const group of CLASS_GROUPS) {
-          const groupBlock = document.createElement("div");
-          groupBlock.className = "class-group";
-
-          const groupTitle = document.createElement("div");
-          groupTitle.className = "class-group-title";
-          groupTitle.textContent = group.title;
-          groupBlock.appendChild(groupTitle);
-
-          const groupList = document.createElement("div");
-          groupList.className = "class-group-list";
-          for (const option of group.options) {
-            groupList.appendChild(
-              createClassOptionButton(
-                { label: option.label, value: option.id },
-                defaultClass
-              )
-            );
-          }
-          groupBlock.appendChild(groupList);
-          classOptionsEl.appendChild(groupBlock);
-        }
-
-        const extraClasses = knownClasses.filter((className) => !PRESET_CLASS_SET.has(className));
-        if (extraClasses.length > 0) {
-          const extraBlock = document.createElement("div");
-          extraBlock.className = "class-group";
-
-          const extraTitle = document.createElement("div");
-          extraTitle.className = "class-group-title";
-          extraTitle.textContent = "기타 반";
-          extraBlock.appendChild(extraTitle);
-
-          const extraList = document.createElement("div");
-          extraList.className = "class-group-list";
-          for (const className of extraClasses) {
-            extraList.appendChild(
-              createClassOptionButton(
-                { label: className, value: className },
-                defaultClass
-              )
-            );
-          }
-          extraBlock.appendChild(extraList);
-          classOptionsEl.appendChild(extraBlock);
+        for (const className of classSequence) {
+          classOptionsEl.appendChild(
+            createClassOptionButton(
+              { label: getClassLabel(className), value: className },
+              defaultClass
+            )
+          );
         }
       }
 
@@ -732,7 +671,7 @@ export function renderHomeworkHtml({ pageTitle }) {
           const generatedAt = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : "알 수 없음";
           statusEl.textContent = "업데이트 " + generatedAt;
         } catch (error) {
-          knownClasses = [...PRESET_CLASS_IDS];
+          knownClasses = [...CLASS_ORDER];
           classesInPosts = [];
           updateClassSummary();
           renderClassOptions();

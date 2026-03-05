@@ -55,6 +55,7 @@ cp .env.example .env
 - `HOMEWORK_AUTHOR=그래그래그레이스`
 - `CLASS_POST_LIMIT=2`
 - `MAX_POSTS=80`
+- `DETAIL_CONCURRENCY=4`
 - `TIME_ZONE=Asia/Seoul`
 - `REQUIRE_LOGIN=true`
 
@@ -140,6 +141,7 @@ npm run remote:sync
 - `CLASS_POST_LIMIT` (기본 `2`)
 - `TIME_ZONE` (기본 `Asia/Seoul`)
 - `MAX_POSTS`
+- `DETAIL_CONCURRENCY` (기본 `4`)
 - `PAGE_TITLE`
 
 ## 운영 시 주의

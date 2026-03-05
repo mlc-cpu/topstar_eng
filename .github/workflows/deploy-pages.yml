@@ -36,6 +36,7 @@ jobs:
       NAVER_STORAGE_STATE_JSON: ${{ secrets.NAVER_STORAGE_STATE_JSON }}
       REQUIRE_LOGIN: ${{ vars.REQUIRE_LOGIN || 'true' }}
       MAX_POSTS: ${{ vars.MAX_POSTS || '80' }}
+      DETAIL_CONCURRENCY: ${{ vars.DETAIL_CONCURRENCY || '4' }}
       CLASS_POST_LIMIT: ${{ vars.CLASS_POST_LIMIT || '2' }}
       HOMEWORK_AUTHOR: ${{ vars.HOMEWORK_AUTHOR || '그래그래그레이스' }}
       TIME_ZONE: ${{ vars.TIME_ZONE || 'Asia/Seoul' }}
