@@ -92,38 +92,10 @@ export function renderHomeworkHtml({ pageTitle }) {
       .class-control {
         margin-top: 8px;
         display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .class-picker-wrap {
-        position: relative;
-      }
-
-      .class-current {
-        font-size: 0.8rem;
-        color: #d5e4ff;
-        line-height: 1.4;
-      }
-
-      .class-options {
-        position: absolute;
-        left: 0;
-        top: calc(100% + 6px);
-        z-index: 15;
-        display: flex;
+        align-items: flex-start;
         flex-wrap: wrap;
         gap: 6px;
-        max-width: min(90vw, 460px);
-        padding: 8px;
-        border-radius: 12px;
-        border: 1px solid rgba(210, 225, 255, 0.3);
-        background: rgba(9, 17, 32, 0.96);
-        box-shadow: 0 14px 26px rgba(3, 11, 24, 0.42);
-      }
-
-      .class-options[hidden] {
-        display: none;
+        margin-bottom: 2px;
       }
 
       .class-option.active {
@@ -131,12 +103,6 @@ export function renderHomeworkHtml({ pageTitle }) {
         background: #e6efff;
         color: #083c8c;
         font-weight: 700;
-      }
-
-      .toolbar {
-        margin-top: 10px;
-        display: flex;
-        justify-content: flex-end;
       }
 
       button {
@@ -154,22 +120,13 @@ export function renderHomeworkHtml({ pageTitle }) {
         cursor: default;
       }
 
-      button.class-picker {
-        min-height: 32px;
-        padding: 4px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(210, 225, 255, 0.35);
-        font-size: 0.78rem;
-        line-height: 1.2;
-      }
-
       button.class-option {
-        min-height: 28px;
+        min-height: 24px;
         border-radius: 999px;
         border: 1px solid rgba(210, 225, 255, 0.35);
-        padding: 3px 9px;
+        padding: 2px 8px;
         font-size: 0.76rem;
-        line-height: 1.2;
+        line-height: 1.1;
         background: rgba(255, 255, 255, 0.12);
         color: #eef4ff;
       }
@@ -319,16 +276,7 @@ export function renderHomeworkHtml({ pageTitle }) {
       <section class="hero">
         <h1>${title}</h1>
         <div class="meta" id="status">데이터 로딩 중...</div>
-        <div class="class-control">
-          <div class="class-picker-wrap">
-            <button id="class-picker" class="class-picker" type="button" aria-expanded="false">기본 반 설정</button>
-            <div class="class-options" id="class-options" hidden></div>
-          </div>
-          <div class="class-current" id="class-current">기본 반: Ace</div>
-        </div>
-        <div class="toolbar">
-          <button id="refresh">새로고침</button>
-        </div>
+        <div class="class-control" id="class-options" aria-label="반 선택"></div>
       </section>
 
       <section class="list" id="content"></section>
@@ -358,9 +306,7 @@ export function renderHomeworkHtml({ pageTitle }) {
         radiant: "Radiant",
       };
       let cachedData = null;
-      let classPickerOpen = false;
       let knownClasses = [...CLASS_ORDER];
-      let classesInPosts = [];
 
       function key(postId, itemId) {
         return STORAGE_PREFIX + postId + ":" + itemId;
@@ -486,24 +432,9 @@ export function renderHomeworkHtml({ pageTitle }) {
         return preferred.concat(others);
       }
 
-      function updateClassSummary() {
-        const classCurrentEl = document.getElementById("class-current");
-        const defaultClass = getDefaultClass();
-        const classLabel = getClassLabel(defaultClass);
-        if (classesInPosts.includes(defaultClass)) {
-          classCurrentEl.textContent = "기본 반: " + classLabel;
-          return;
-        }
-
-        classCurrentEl.textContent = "기본 반: " + classLabel + " (현재 공지 없음)";
-      }
-
       async function chooseDefaultClass(className) {
         setDefaultClass(className);
-        classPickerOpen = false;
-        renderClassOptions();
-        updateClassSummary();
-        await render({ useCache: true });
+        await render({ useCache: false });
       }
 
       function createClassOptionButton(option, defaultClass) {
@@ -521,12 +452,8 @@ export function renderHomeworkHtml({ pageTitle }) {
       }
 
       function renderClassOptions() {
-        const classPickerEl = document.getElementById("class-picker");
         const classOptionsEl = document.getElementById("class-options");
         const defaultClass = getDefaultClass();
-
-        classPickerEl.setAttribute("aria-expanded", classPickerOpen ? "true" : "false");
-        classOptionsEl.hidden = !classPickerOpen;
         classOptionsEl.innerHTML = "";
 
         const classSequence = [...CLASS_ORDER].concat(
@@ -655,8 +582,6 @@ export function renderHomeworkHtml({ pageTitle }) {
           const posts = Array.isArray(data.posts) ? data.posts : [];
           const classCollection = collectClassNames(posts);
           knownClasses = classCollection.all;
-          classesInPosts = classCollection.inPosts;
-          updateClassSummary();
           renderClassOptions();
 
           const orderedPosts = prioritizePosts(posts);
@@ -672,8 +597,6 @@ export function renderHomeworkHtml({ pageTitle }) {
           statusEl.textContent = "업데이트 " + generatedAt;
         } catch (error) {
           knownClasses = [...CLASS_ORDER];
-          classesInPosts = [];
-          updateClassSummary();
           renderClassOptions();
           contentEl.innerHTML = "";
           const block = document.createElement("div");
@@ -683,39 +606,6 @@ export function renderHomeworkHtml({ pageTitle }) {
           statusEl.textContent = "업데이트 실패";
         }
       }
-
-      document.getElementById("class-picker").addEventListener("click", () => {
-        classPickerOpen = !classPickerOpen;
-        renderClassOptions();
-      });
-
-      document.addEventListener("click", (event) => {
-        if (!classPickerOpen) {
-          return;
-        }
-
-        const classPickerEl = document.getElementById("class-picker");
-        const classOptionsEl = document.getElementById("class-options");
-        if (classPickerEl.contains(event.target) || classOptionsEl.contains(event.target)) {
-          return;
-        }
-
-        classPickerOpen = false;
-        renderClassOptions();
-      });
-
-      document.getElementById("refresh").addEventListener("click", async (event) => {
-        const button = event.currentTarget;
-        const oldText = button.textContent;
-        button.disabled = true;
-        button.textContent = "새로고침 중...";
-        try {
-          await render({ useCache: false });
-        } finally {
-          button.textContent = oldText;
-          button.disabled = false;
-        }
-      });
 
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
