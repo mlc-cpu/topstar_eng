@@ -175,6 +175,7 @@ function detectClassFromMenuText(text) {
 
   const compact = normalized.toLowerCase().replace(/[^a-z]/g, "");
   for (const [alias, className] of CLASS_MENU_FUZZY_ALIASES) {
+    // Naver menu labels may append unread badges like "N"/"NEW" to class names.
     if (compact === alias || compact === `${alias}n` || compact === `${alias}new`) {
       return className;
     }
