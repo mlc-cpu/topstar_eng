@@ -4,11 +4,11 @@
 
 ## 핵심 포인트
 
-- `그래그래그레이스` 작성 + 제목에 `반 숙제`가 포함된 글만 사용
+- `그래그래그레이스` 작성 + 숙제 신호 제목(예: `~~반 숙제`, `Champ // ...`) 글만 사용
 - 반별 최신 숙제 게시글 `2개`씩 노출 (`CLASS_POST_LIMIT`)
 - 체크 상태는 각 기기 `localStorage`에 저장
 - 정적 사이트라 GitHub Pages 배포 가능
-- 앱 열 때 1회 로드, 실행 중에는 상단 `새로고침` 버튼으로만 갱신
+- 기본 반 버튼 클릭 시 서버 수집 API(`/api/refresh`) 호출 후 즉시 화면 갱신
 - 수집/렌더링은 `npm run sync` 한 번으로 생성
 - 앱 아이콘은 `assets/topstar-logo.png`를 사용
 
@@ -56,6 +56,9 @@ cp .env.example .env
 - `CLASS_POST_LIMIT=2`
 - `MAX_POSTS=80`
 - `DETAIL_CONCURRENCY=4`
+- `REFRESH_COOLDOWN_SECONDS=300`
+- `QUIET_HOURS_START=0`
+- `QUIET_HOURS_END=6`
 - `TIME_ZONE=Asia/Seoul`
 - `REQUIRE_LOGIN=true`
 
@@ -93,7 +96,7 @@ npm run remote:setup
 - 원격에서 `npm ci`, `playwright chromium` 설치
 - `launchd` 잡 등록:
 - `com.jayoc.topstar_eng.server` (상시 웹서버)
-- `com.jayoc.topstar_eng.sync` (30분 주기 동기화)
+- `com.jayoc.topstar_eng.sync` (1시간 주기 동기화, 00:00-06:00 자동 수집 스킵)
 
 2. 원격 상태 확인
 
@@ -122,7 +125,7 @@ npm run remote:sync
 
 워크플로 파일: `.github/workflows/deploy-pages.yml`
 
-- 30분 주기 + 수동 실행 + `main` 푸시 시 배포
+- 1시간 주기(00:00-06:00 KST 자동 수집 스킵) + 수동 실행 + `main` 푸시 시 배포
 - `public/` 폴더를 GitHub Pages로 게시
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정
 - Pages 주소: `https://mlc-cpu.github.io/topstar_eng/`
@@ -142,6 +145,9 @@ npm run remote:sync
 - `TIME_ZONE` (기본 `Asia/Seoul`)
 - `MAX_POSTS`
 - `DETAIL_CONCURRENCY` (기본 `4`)
+- `REFRESH_COOLDOWN_SECONDS` (기본 `300`)
+- `QUIET_HOURS_START` (기본 `0`)
+- `QUIET_HOURS_END` (기본 `6`)
 - `PAGE_TITLE`
 
 ## 운영 시 주의

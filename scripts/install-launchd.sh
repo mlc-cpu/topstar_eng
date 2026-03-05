@@ -7,7 +7,7 @@ LOG_DIR="$PROJECT_DIR/.logs"
 
 SYNC_LABEL="${SYNC_LABEL:-com.jayoc.topstar_eng.sync}"
 SERVER_LABEL="${SERVER_LABEL:-com.jayoc.topstar_eng.server}"
-SYNC_INTERVAL_SECONDS="${SYNC_INTERVAL_SECONDS:-1800}"
+SYNC_INTERVAL_SECONDS="${SYNC_INTERVAL_SECONDS:-3600}"
 PORT="${PORT:-4173}"
 
 SYNC_PLIST="$LAUNCH_DIR/${SYNC_LABEL}.plist"
@@ -26,7 +26,7 @@ cat > "$SYNC_PLIST" <<PLIST
     <array>
       <string>/bin/bash</string>
       <string>-lc</string>
-      <string>export PATH='/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'; cd '${PROJECT_DIR}' &amp;&amp; npm run sync</string>
+      <string>export PATH='/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'; cd '${PROJECT_DIR}' &amp;&amp; npm run sync -- --scheduled</string>
     </array>
     <key>RunAtLoad</key>
     <true/>

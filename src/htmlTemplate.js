@@ -434,7 +434,8 @@ export function renderHomeworkHtml({ pageTitle }) {
 
       async function chooseDefaultClass(className) {
         setDefaultClass(className);
-        await render({ useCache: false });
+        const refreshResult = await requestRefreshFromServer();
+        await render({ useCache: false, refreshResult });
       }
 
       function createClassOptionButton(option, defaultClass) {
@@ -467,6 +468,29 @@ export function renderHomeworkHtml({ pageTitle }) {
               defaultClass
             )
           );
+        }
+      }
+
+      async function requestRefreshFromServer() {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+
+        try {
+          const response = await fetch("./api/refresh", {
+            method: "POST",
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            return null;
+          }
+
+          const payload = await response.json().catch(() => null);
+          return payload && typeof payload === "object" ? payload : null;
+        } catch {
+          return null;
+        } finally {
+          clearTimeout(timeout);
         }
       }
 
@@ -570,7 +594,28 @@ export function renderHomeworkHtml({ pageTitle }) {
         contentEl.appendChild(empty);
       }
 
-      async function render({ useCache = false } = {}) {
+      function buildStatusText(generatedAt, refreshResult) {
+        const base = "업데이트 " + generatedAt;
+        if (!refreshResult || typeof refreshResult !== "object") {
+          return base;
+        }
+
+        if (refreshResult.status === "refreshed") {
+          return "새 수집 완료 · " + base;
+        }
+
+        if (refreshResult.status === "cooldown_skip") {
+          return "최근 5분 내 수집 데이터 · " + base;
+        }
+
+        if (refreshResult.status === "quiet_hours_skip") {
+          return "야간 자동수집 제외 시간 · " + base;
+        }
+
+        return base;
+      }
+
+      async function render({ useCache = false, refreshResult = null } = {}) {
         const statusEl = document.getElementById("status");
         const contentEl = document.getElementById("content");
 
@@ -594,7 +639,7 @@ export function renderHomeworkHtml({ pageTitle }) {
           }
 
           const generatedAt = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : "알 수 없음";
-          statusEl.textContent = "업데이트 " + generatedAt;
+          statusEl.textContent = buildStatusText(generatedAt, refreshResult);
         } catch (error) {
           knownClasses = [...CLASS_ORDER];
           renderClassOptions();

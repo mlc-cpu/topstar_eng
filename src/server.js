@@ -3,14 +3,18 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import path from "node:path";
 
 import { config } from "./config.js";
+import { runSync } from "./main.js";
+import { readJson } from "./utils.js";
 
 const root = path.resolve(config.outputDir);
+let refreshInFlight = null;
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "application/javascript; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -29,8 +33,91 @@ function resolveFilePath(urlPath) {
   return absolutePath;
 }
 
-const server = http.createServer((req, res) => {
-  const filePath = resolveFilePath(req.url || "/");
+function writeJsonResponse(res, statusCode, payload) {
+  res.writeHead(statusCode, {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store, max-age=0",
+  });
+  res.end(JSON.stringify(payload));
+}
+
+async function handleRefreshRequest(url, res) {
+  const force = url.searchParams.get("force") === "1";
+
+  if (refreshInFlight) {
+    const inFlightResult = await refreshInFlight;
+    writeJsonResponse(res, 200, {
+      ok: true,
+      inFlight: true,
+      ...inFlightResult,
+    });
+    return;
+  }
+
+  refreshInFlight = runSync({
+    trigger: "manual",
+    force,
+    scheduled: false,
+  }).finally(() => {
+    refreshInFlight = null;
+  });
+
+  const result = await refreshInFlight;
+  writeJsonResponse(res, 200, {
+    ok: true,
+    inFlight: false,
+    ...result,
+  });
+}
+
+async function handleStatusRequest(res) {
+  const state = (await readJson(config.stateFile, {})) || {};
+  writeJsonResponse(res, 200, {
+    ok: true,
+    syncedAt: state.syncedAt || null,
+    lastTrigger: state.lastTrigger || null,
+    refreshInFlight: Boolean(refreshInFlight),
+    refreshCooldownSeconds: config.refreshCooldownSeconds,
+    quietHours: {
+      start: config.quietHoursStart,
+      end: config.quietHoursEnd,
+      timeZone: config.timeZone,
+    },
+  });
+}
+
+async function handleApiRequest(req, res, url) {
+  if (url.pathname === "/api/status") {
+    if (req.method !== "GET") {
+      writeJsonResponse(res, 405, { ok: false, error: "Method Not Allowed" });
+      return true;
+    }
+
+    await handleStatusRequest(res);
+    return true;
+  }
+
+  if (url.pathname === "/api/refresh") {
+    if (req.method !== "POST" && req.method !== "GET") {
+      writeJsonResponse(res, 405, { ok: false, error: "Method Not Allowed" });
+      return true;
+    }
+
+    await handleRefreshRequest(url, res);
+    return true;
+  }
+
+  return false;
+}
+
+async function handleRequest(req, res) {
+  const requestUrl = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+
+  if (await handleApiRequest(req, res, requestUrl)) {
+    return;
+  }
+
+  const filePath = resolveFilePath(requestUrl.pathname || "/");
 
   if (!filePath || !existsSync(filePath)) {
     res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
@@ -58,6 +145,16 @@ const server = http.createServer((req, res) => {
 
   res.writeHead(200, headers);
   createReadStream(filePath).pipe(res);
+}
+
+const server = http.createServer((req, res) => {
+  handleRequest(req, res).catch((error) => {
+    console.error(`[serve] request failed: ${error.stack || error.message}`);
+    if (!res.headersSent) {
+      res.writeHead(500, { "content-type": "application/json; charset=utf-8" });
+    }
+    res.end(JSON.stringify({ ok: false, error: "Internal Server Error" }));
+  });
 });
 
 server.listen(config.port, "0.0.0.0", () => {

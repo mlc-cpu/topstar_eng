@@ -3,7 +3,7 @@ name: Build and Deploy Homework Page
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 * * * *"
   push:
     branches:
       - main
@@ -29,6 +29,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      skipped: ${{ steps.quiet-guard.outputs.skipped }}
     env:
       NAVER_CAFE_BOARD_URL: ${{ secrets.NAVER_CAFE_BOARD_URL }}
       NAVER_ID: ${{ secrets.NAVER_ID }}
@@ -39,6 +41,9 @@ jobs:
       DETAIL_CONCURRENCY: ${{ vars.DETAIL_CONCURRENCY || '4' }}
       CLASS_POST_LIMIT: ${{ vars.CLASS_POST_LIMIT || '2' }}
       HOMEWORK_AUTHOR: ${{ vars.HOMEWORK_AUTHOR || '그래그래그레이스' }}
+      REFRESH_COOLDOWN_SECONDS: ${{ vars.REFRESH_COOLDOWN_SECONDS || '300' }}
+      QUIET_HOURS_START: ${{ vars.QUIET_HOURS_START || '0' }}
+      QUIET_HOURS_END: ${{ vars.QUIET_HOURS_END || '6' }}
       TIME_ZONE: ${{ vars.TIME_ZONE || 'Asia/Seoul' }}
       HEADLESS: "true"
       OUTPUT_DIR: ./public
@@ -50,22 +55,47 @@ jobs:
       PAGES_URL: https://mlc-cpu.github.io/topstar_eng/
       SHORT_URL: https://is.gd/qDMgMU
     steps:
+      - name: Quiet hours guard
+        id: quiet-guard
+        run: |
+          skipped=false
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            current_hour=$((10#$(TZ=Asia/Seoul date +%H)))
+            start_hour=$((10#${QUIET_HOURS_START}))
+            end_hour=$((10#${QUIET_HOURS_END}))
+            if [ "${start_hour}" -lt "${end_hour}" ]; then
+              if [ "${current_hour}" -ge "${start_hour}" ] && [ "${current_hour}" -lt "${end_hour}" ]; then
+                skipped=true
+              fi
+            elif [ "${start_hour}" -gt "${end_hour}" ]; then
+              if [ "${current_hour}" -ge "${start_hour}" ] || [ "${current_hour}" -lt "${end_hour}" ]; then
+                skipped=true
+              fi
+            fi
+          fi
+          echo "skipped=${skipped}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout
+        if: steps.quiet-guard.outputs.skipped != 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node
+        if: steps.quiet-guard.outputs.skipped != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
+        if: steps.quiet-guard.outputs.skipped != 'true'
         run: npm ci
 
       - name: Install Playwright browser
+        if: steps.quiet-guard.outputs.skipped != 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Restore optional storage state
+        if: steps.quiet-guard.outputs.skipped != 'true'
         run: |
           if [ -n "${NAVER_STORAGE_STATE_JSON:-}" ]; then
             mkdir -p .state
@@ -73,14 +103,22 @@ jobs:
           fi
 
       - name: Build static page
-        run: npm run sync
+        if: steps.quiet-guard.outputs.skipped != 'true'
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            npm run sync -- --scheduled
+          else
+            npm run sync
+          fi
 
       - name: Upload Pages artifact
+        if: steps.quiet-guard.outputs.skipped != 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
 
   deploy:
+    if: needs.build.outputs.skipped != 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

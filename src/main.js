@@ -1,6 +1,7 @@
 import path from "node:path";
 import { constants as fsConstants } from "node:fs";
 import { access, copyFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 
 import { config } from "./config.js";
 import { buildChecklist } from "./checklistBuilder.js";
@@ -10,6 +11,7 @@ import { renderIconSvg, renderManifest, renderServiceWorker } from "./pwaAssets.
 import {
   extractClassNameFromTitle,
   ensureDir,
+  readJson,
   writeJson,
   writeText,
 } from "./utils.js";
@@ -68,6 +70,59 @@ function classSortOrder(leftClass, rightClass) {
   }
 
   return leftClass.localeCompare(rightClass, "ko");
+}
+
+function parseSyncedAt(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function getHourInTimeZone(date, timeZone) {
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).format(date);
+
+  const hour = Number.parseInt(formatted, 10);
+  return Number.isFinite(hour) ? hour : 0;
+}
+
+function isQuietHour(date, { startHour, endHour, timeZone }) {
+  const hour = getHourInTimeZone(date, timeZone);
+  if (startHour === endHour) {
+    return false;
+  }
+
+  if (startHour < endHour) {
+    return hour >= startHour && hour < endHour;
+  }
+
+  return hour >= startHour || hour < endHour;
+}
+
+function hasCooldown(lastSyncedAt, now, cooldownSeconds) {
+  if (!(lastSyncedAt instanceof Date) || Number.isNaN(lastSyncedAt.getTime())) {
+    return false;
+  }
+
+  const cooldownMs = Math.max(0, cooldownSeconds) * 1000;
+  if (cooldownMs < 1) {
+    return false;
+  }
+
+  const elapsedMs = now.getTime() - lastSyncedAt.getTime();
+  return elapsedMs >= 0 && elapsedMs < cooldownMs;
+}
+
+function remainingCooldownSeconds(lastSyncedAt, now, cooldownSeconds) {
+  const cooldownMs = Math.max(0, cooldownSeconds) * 1000;
+  const elapsedMs = Math.max(0, now.getTime() - lastSyncedAt.getTime());
+  return Math.max(0, Math.ceil((cooldownMs - elapsedMs) / 1000));
 }
 
 function selectHomeworkPostsByClass(posts, { author, perClassLimit }) {
@@ -138,8 +193,52 @@ async function copyAppLogo(sourcePath, outputPath) {
   return true;
 }
 
-async function run() {
+export async function runSync(options = {}) {
+  const now = options.now instanceof Date ? options.now : new Date();
+  const scheduled = Boolean(options.scheduled);
+  const force = Boolean(options.force);
+  const trigger = options.trigger || (scheduled ? "scheduled" : "manual");
+
   await ensureDir(config.outputDir);
+  const previousState = (await readJson(config.stateFile, {})) || {};
+  const lastSyncedAt = parseSyncedAt(previousState.syncedAt);
+
+  if (
+    scheduled &&
+    isQuietHour(now, {
+      startHour: config.quietHoursStart,
+      endHour: config.quietHoursEnd,
+      timeZone: config.timeZone,
+    })
+  ) {
+    console.log(
+      `[sync] skipped (quiet hours ${config.quietHoursStart}:00-${config.quietHoursEnd}:00 ${config.timeZone})`
+    );
+    return {
+      status: "quiet_hours_skip",
+      skipped: true,
+      reason: "quiet_hours",
+      syncedAt: previousState.syncedAt || null,
+      trigger,
+    };
+  }
+
+  if (!force && hasCooldown(lastSyncedAt, now, config.refreshCooldownSeconds)) {
+    const remaining = remainingCooldownSeconds(
+      lastSyncedAt,
+      now,
+      config.refreshCooldownSeconds
+    );
+    console.log(`[sync] skipped (cooldown ${remaining}s remaining)`);
+    return {
+      status: "cooldown_skip",
+      skipped: true,
+      reason: "cooldown",
+      cooldownRemainingSeconds: remaining,
+      syncedAt: previousState.syncedAt || null,
+      trigger,
+    };
+  }
 
   const posts = await collectHomeworkPosts();
   const allChecklistPosts = buildChecklist(posts, { timeZone: config.timeZone });
@@ -156,9 +255,13 @@ async function run() {
     source: {
       boardUrl: config.boardUrl,
       maxPosts: config.maxPosts,
+      detailConcurrency: config.detailConcurrency,
       classPostLimit: config.classPostLimit,
       homeworkAuthor: config.homeworkAuthor,
       recentPolicy: "author-and-homework-signal-per-class-limit",
+      refreshCooldownSeconds: config.refreshCooldownSeconds,
+      quietHoursStart: config.quietHoursStart,
+      quietHoursEnd: config.quietHoursEnd,
       timeZone: config.timeZone,
       pagesUrl: config.pagesUrl,
       shortUrl: config.shortUrl,
@@ -187,8 +290,10 @@ async function run() {
   await writeText(path.join(config.outputDir, ".nojekyll"), "");
   await writeText(path.join(config.outputDir, "short-url.txt"), `${config.shortUrl}\n`);
   await writeJson(config.stateFile, {
+    ...previousState,
     syncedAt: payload.generatedAt,
     postIds: checklistPosts.map((post) => post.postId),
+    lastTrigger: trigger,
     pagesUrl: config.pagesUrl,
     shortUrl: config.shortUrl,
   });
@@ -196,9 +301,41 @@ async function run() {
   console.log(
     `[sync] generated ${checklistPosts.length} post(s) -> ${config.dataFile} and ${config.htmlFile}`
   );
+
+  return {
+    status: "refreshed",
+    skipped: false,
+    trigger,
+    syncedAt: payload.generatedAt,
+    postCount: checklistPosts.length,
+    matchedClassCount,
+  };
 }
 
-run().catch((error) => {
-  console.error(`[sync] failed: ${error.stack || error.message}`);
-  process.exit(1);
-});
+function parseCliOptions(argv) {
+  const argSet = new Set(argv);
+  const scheduled = argSet.has("--scheduled");
+  const force = argSet.has("--force");
+  return {
+    scheduled,
+    force,
+    trigger: scheduled ? "scheduled" : "cli",
+  };
+}
+
+function isDirectExecution() {
+  if (!process.argv[1]) {
+    return false;
+  }
+
+  const currentFilePath = fileURLToPath(import.meta.url);
+  return path.resolve(process.argv[1]) === currentFilePath;
+}
+
+if (isDirectExecution()) {
+  const cliOptions = parseCliOptions(process.argv.slice(2));
+  runSync(cliOptions).catch((error) => {
+    console.error(`[sync] failed: ${error.stack || error.message}`);
+    process.exit(1);
+  });
+}
