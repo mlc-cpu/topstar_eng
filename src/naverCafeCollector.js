@@ -501,13 +501,21 @@ export async function collectHomeworkPosts() {
       }
     }
 
-    const links = uniqueBy(linksByClass, (item) => item.postId).slice(0, config.maxPosts);
-    if (config.requireLogin && links.length < 1) {
+    const classScopedLinks = uniqueBy(
+      linksByClass,
+      (item) => `${item.className || ""}:${item.postId}`
+    );
+    const uniqueLinks = uniqueBy(classScopedLinks, (item) => item.postId).slice(0, config.maxPosts);
+    console.log(
+      `[collect] class-scoped links=${classScopedLinks.length}, unique posts=${uniqueLinks.length}`
+    );
+
+    if (config.requireLogin && uniqueLinks.length < 1) {
       throw loginRequiredError();
     }
 
     const detailedPosts = await mapWithConcurrency(
-      links,
+      uniqueLinks,
       config.detailConcurrency,
       async (link) => {
         try {
@@ -522,7 +530,28 @@ export async function collectHomeworkPosts() {
         }
       }
     );
-    const posts = detailedPosts.filter(Boolean);
+    const detailMap = new Map(
+      detailedPosts
+        .filter(Boolean)
+        .map((post) => [post.postId, post])
+    );
+
+    const posts = uniqueBy(
+      classScopedLinks
+        .map((link) => {
+          const detail = detailMap.get(link.postId);
+          if (!detail) {
+            return null;
+          }
+
+          return {
+            ...detail,
+            className: link.className || detail.className || "",
+          };
+        })
+        .filter(Boolean),
+      (item) => `${item.className || ""}:${item.postId}`
+    );
 
     if (config.requireLogin && posts.length < 1) {
       throw loginRequiredError();
