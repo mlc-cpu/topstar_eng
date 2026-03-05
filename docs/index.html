@@ -402,22 +402,13 @@
         };
       }
 
-      function prioritizePosts(posts) {
-        const defaultClass = getDefaultClass();
-        if (!defaultClass) {
+      function filterPostsBySelectedClass(posts) {
+        const selectedClass = getDefaultClass();
+        if (!selectedClass) {
           return [...posts];
         }
 
-        const preferred = [];
-        const others = [];
-        for (const post of posts) {
-          if (extractClassName(post) === defaultClass) {
-            preferred.push(post);
-          } else {
-            others.push(post);
-          }
-        }
-        return preferred.concat(others);
+        return posts.filter((post) => extractClassName(post) === selectedClass);
       }
 
       async function chooseDefaultClass(className) {
@@ -658,11 +649,11 @@
           knownClasses = classCollection.all;
           renderClassOptions();
 
-          const orderedPosts = prioritizePosts(posts);
-          if (orderedPosts.length < 1) {
+          const visiblePosts = filterPostsBySelectedClass(posts);
+          if (visiblePosts.length < 1) {
             renderEmpty(contentEl);
           } else {
-            for (const post of orderedPosts) {
+            for (const post of visiblePosts) {
               contentEl.appendChild(renderPost(post));
             }
           }
