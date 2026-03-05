@@ -15,6 +15,14 @@ import {
 
 const CLASS_MENU_NAMES = ["Ace", "Star", "Top", "Peak", "Champion", "Radiant"];
 const CLASS_MENU_SET = new Set(CLASS_MENU_NAMES);
+const DEFAULT_CLASS_MENU_ID_MAP = {
+  Ace: "38",
+  Star: "30",
+  Top: "22",
+  Peak: "12",
+  Champion: "41",
+  Radiant: "25",
+};
 const CLASS_MENU_FUZZY_ALIASES = [
   ["champion", "Champion"],
   ["champ", "Champion"],
@@ -318,6 +326,33 @@ function ensureListViewUrl(url) {
   return `${url}${url.includes("?") ? "&" : "?"}viewType=L`;
 }
 
+function buildMenuUrlFromBoardUrl(boardUrl, menuId) {
+  const raw = String(boardUrl ?? "");
+  if (!raw || !menuId) {
+    return "";
+  }
+
+  const match = raw.match(/\/cafes\/(\d+)\/menus\/\d+/i);
+  if (!match?.[1]) {
+    return "";
+  }
+
+  const cafeId = match[1];
+  return `https://cafe.naver.com/f-e/cafes/${cafeId}/menus/${menuId}?viewType=L`;
+}
+
+function buildFallbackMenuMap(boardUrl) {
+  const fallbackMap = new Map();
+  for (const className of CLASS_MENU_NAMES) {
+    const menuId = DEFAULT_CLASS_MENU_ID_MAP[className];
+    const menuUrl = buildMenuUrlFromBoardUrl(boardUrl, menuId);
+    if (menuUrl) {
+      fallbackMap.set(className, menuUrl);
+    }
+  }
+  return fallbackMap;
+}
+
 async function discoverClassMenus(page, frame, fallbackUrl) {
   const [frameMenus, pageMenus] = await Promise.all([
     collectMenuAnchors(frame),
@@ -342,6 +377,20 @@ async function discoverClassMenus(page, frame, fallbackUrl) {
     }
   }
 
+  const fallbackMenus = buildFallbackMenuMap(fallbackUrl);
+  if (discovered.size < CLASS_MENU_NAMES.length) {
+    for (const className of CLASS_MENU_NAMES) {
+      if (discovered.has(className)) {
+        continue;
+      }
+
+      const fallbackMenuUrl = fallbackMenus.get(className);
+      if (fallbackMenuUrl) {
+        discovered.set(className, fallbackMenuUrl);
+      }
+    }
+  }
+
   if (discovered.size > 0) {
     const resolved = CLASS_MENU_NAMES.filter((className) => discovered.has(className)).map((className) => ({
       className,
@@ -352,14 +401,14 @@ async function discoverClassMenus(page, frame, fallbackUrl) {
   }
 
   const fallbackClassName = canonicalizeClassName(extractClassNameFromTitle(fallbackUrl || ""));
-  const fallbackMenus = [
+  const singleFallbackMenu = [
     {
       className: fallbackClassName || "",
       url: ensureListViewUrl(fallbackUrl),
     },
   ];
   console.log("[collect] class menu discovery fallback used");
-  return fallbackMenus;
+  return singleFallbackMenu;
 }
 
 async function mapWithConcurrency(items, limit, mapper) {
