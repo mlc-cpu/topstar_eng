@@ -4,6 +4,7 @@ import { chromium } from "playwright";
 
 import { config } from "./config.js";
 import {
+  canonicalizeClassName,
   extractClassNameFromTitle,
   extractPostId,
   normalizeText,
@@ -11,6 +12,9 @@ import {
   uniqueBy,
   writeJson,
 } from "./utils.js";
+
+const CLASS_MENU_NAMES = ["Ace", "Star", "Top", "Peak", "Champion", "Radiant"];
+const CLASS_MENU_SET = new Set(CLASS_MENU_NAMES);
 
 async function waitForMainFrame(page) {
   for (let i = 0; i < 20; i += 1) {
@@ -102,7 +106,8 @@ async function pickFirstText(frame, selectors, options = {}) {
   return "";
 }
 
-async function getPostLinks(frame) {
+async function getPostLinks(frame, options = {}) {
+  const limit = Math.max(1, options.limit ?? config.maxPosts);
   const rawLinks = await frame.evaluate(() => {
     const anchors = Array.from(document.querySelectorAll("a[href]"));
 
@@ -134,7 +139,7 @@ async function getPostLinks(frame) {
 
   const deduped = uniqueBy(links, (item) => item.postId);
   const prioritized = prioritizeHomeworkLikeLinks(deduped);
-  return prioritized.slice(0, config.maxPosts);
+  return prioritized.slice(0, limit);
 }
 
 function isLikelyHomeworkTitle(title) {
@@ -234,10 +239,68 @@ async function getPostDetail(context, post) {
       bodyText,
       publishedAt: normalizeText(publishedAt),
       author: normalizeText(author),
+      className: post.className || "",
     };
   } finally {
     await detailPage.close();
   }
+}
+
+function ensureListViewUrl(url) {
+  if (!url) {
+    return "";
+  }
+
+  if (url.includes("viewType=")) {
+    return url;
+  }
+
+  return `${url}${url.includes("?") ? "&" : "?"}viewType=L`;
+}
+
+async function discoverClassMenus(frame, fallbackUrl) {
+  const rawMenus = await frame.evaluate(() => {
+    const anchors = Array.from(document.querySelectorAll("a[href]"));
+    return anchors
+      .map((anchor) => ({
+        href: anchor.getAttribute("href") || "",
+        text: (anchor.textContent || "").trim(),
+      }))
+      .filter((item) => item.href.includes("/menus/"))
+      .filter((item) => item.text);
+  });
+
+  const discovered = new Map();
+  for (const menu of rawMenus) {
+    const className = canonicalizeClassName(menu.text);
+    if (!CLASS_MENU_SET.has(className)) {
+      continue;
+    }
+
+    if (discovered.has(className)) {
+      continue;
+    }
+
+    const url = ensureListViewUrl(toAbsoluteNaverUrl(menu.href));
+    if (url) {
+      discovered.set(className, url);
+    }
+  }
+
+  if (discovered.size > 0) {
+    return CLASS_MENU_NAMES.filter((className) => discovered.has(className)).map((className) => ({
+      className,
+      url: discovered.get(className),
+    }));
+  }
+
+  const fallbackClassName = canonicalizeClassName(extractClassNameFromTitle(fallbackUrl || ""));
+  return [
+    {
+      className: fallbackClassName || "",
+      url: ensureListViewUrl(fallbackUrl),
+    },
+  ];
 }
 
 async function mapWithConcurrency(items, limit, mapper) {
@@ -302,7 +365,35 @@ export async function collectHomeworkPosts() {
       throw loginRequiredError();
     }
 
-    const links = await getPostLinks(frame);
+    const classMenus = await discoverClassMenus(frame, config.boardUrl);
+    const menuPostScanLimit = Math.max(8, config.classPostLimit * 4);
+
+    const linksByClass = [];
+    for (const menu of classMenus) {
+      await page.goto(menu.url, {
+        waitUntil: "domcontentloaded",
+        timeout: 45_000,
+      });
+
+      if (config.requireLogin && (await pageLooksLikeLoginGate(page))) {
+        throw loginRequiredError();
+      }
+
+      const menuFrame = await waitForMainFrame(page);
+      if (!menuFrame) {
+        continue;
+      }
+
+      const menuLinks = await getPostLinks(menuFrame, { limit: menuPostScanLimit });
+      for (const link of menuLinks) {
+        linksByClass.push({
+          ...link,
+          className: menu.className || "",
+        });
+      }
+    }
+
+    const links = uniqueBy(linksByClass, (item) => item.postId).slice(0, config.maxPosts);
     if (config.requireLogin && links.length < 1) {
       throw loginRequiredError();
     }
