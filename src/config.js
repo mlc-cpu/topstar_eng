@@ -22,8 +22,9 @@ export const config = {
   boardUrl: process.env.NAVER_CAFE_BOARD_URL?.trim() ?? "",
   headless: toBool(process.env.HEADLESS, true),
   requireLogin: toBool(process.env.REQUIRE_LOGIN, true),
-  maxPosts: toInt(process.env.MAX_POSTS, 5),
-  recentDays: Math.max(1, toInt(process.env.RECENT_DAYS, 2)),
+  maxPosts: toInt(process.env.MAX_POSTS, 80),
+  classPostLimit: Math.max(1, toInt(process.env.CLASS_POST_LIMIT, 2)),
+  homeworkAuthor: process.env.HOMEWORK_AUTHOR?.trim() || "그래그래그레이스",
   port: toInt(process.env.PORT, 4173),
   timeZone: process.env.TIME_ZONE?.trim() || "Asia/Seoul",
   pageTitle: process.env.PAGE_TITLE?.trim() || "TopStar 영어학원 숙제 체크리스트",
@@ -33,4 +34,7 @@ export const config = {
   stateFile: process.env.STATE_FILE?.trim() || "./.state/run-state.json",
   storageStateFile:
     process.env.STORAGE_STATE_FILE?.trim() || "./.state/naver-storage-state.json",
+  appLogoFile: process.env.APP_LOGO_FILE?.trim() || "./assets/topstar-logo.png",
+  pagesUrl: process.env.PAGES_URL?.trim() || "https://mlc-cpu.github.io/topstar_eng/",
+  shortUrl: process.env.SHORT_URL?.trim() || "https://is.gd/qDMgMU",
 };

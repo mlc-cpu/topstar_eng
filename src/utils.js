@@ -59,6 +59,60 @@ export function normalizeText(value) {
     .trim();
 }
 
+const CLASS_ALIAS_MAP = {
+  ace: "Ace",
+  star: "Star",
+  top: "Top",
+  peak: "Peak",
+  champ: "Champion",
+  champion: "Champion",
+  radiant: "Radiant",
+};
+
+function normalizeClassToken(value) {
+  return String(value ?? "")
+    .replaceAll("☆", " ")
+    .replaceAll("★", " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function canonicalizeClassName(value) {
+  const cleaned = normalizeClassToken(value);
+  if (!cleaned) {
+    return "";
+  }
+
+  const compact = cleaned.toLowerCase().replace(/\s+/g, "");
+  return CLASS_ALIAS_MAP[compact] || cleaned;
+}
+
+export function extractClassNameFromTitle(title) {
+  const normalizedTitle = normalizeText(title);
+  if (!normalizedTitle) {
+    return "";
+  }
+
+  const homeworkPattern = /^(.+?)\s*반\s*숙제/i;
+  const homeworkMatch = normalizedTitle.match(homeworkPattern);
+  if (homeworkMatch?.[1]) {
+    return canonicalizeClassName(homeworkMatch[1]);
+  }
+
+  for (const separator of ["//", "|", "｜"]) {
+    const separatorIndex = normalizedTitle.indexOf(separator);
+    if (separatorIndex > -1) {
+      const candidate = normalizedTitle.slice(0, separatorIndex);
+      const className = canonicalizeClassName(candidate);
+      if (className) {
+        return className;
+      }
+    }
+  }
+
+  return "";
+}
+
 export function buildItemId(seed) {
   return crypto.createHash("sha1").update(seed).digest("hex").slice(0, 12);
 }

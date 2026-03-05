@@ -1,10 +1,18 @@
-import { buildItemId, derivePostDate, extractChecklistItems, toDateKey } from "./utils.js";
+import {
+  buildItemId,
+  canonicalizeClassName,
+  derivePostDate,
+  extractChecklistItems,
+  extractClassNameFromTitle,
+  toDateKey,
+} from "./utils.js";
 
 export function buildChecklist(posts, { timeZone = "Asia/Seoul" } = {}) {
   return posts.map((post) => {
     const parsedItems = extractChecklistItems(post.bodyText);
     const postDate = derivePostDate(post);
     const postDateKey = postDate ? toDateKey(postDate, timeZone) : "";
+    const className = canonicalizeClassName(post.className) || extractClassNameFromTitle(post.title);
 
     const items =
       parsedItems.length > 0
@@ -23,6 +31,8 @@ export function buildChecklist(posts, { timeZone = "Asia/Seoul" } = {}) {
       postId: post.postId,
       title: post.title,
       url: post.url,
+      author: post.author || "",
+      className,
       publishedAt: post.publishedAt,
       postDate: postDateKey,
       items,

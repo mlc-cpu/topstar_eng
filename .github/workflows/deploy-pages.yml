@@ -9,10 +9,13 @@ on:
       - main
     paths:
       - "src/**"
+      - "assets/**"
+      - "scripts/**"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/deploy-pages.yml"
       - ".env.example"
+      - "README.md"
 
 permissions:
   contents: read
@@ -32,8 +35,9 @@ jobs:
       NAVER_PASSWORD: ${{ secrets.NAVER_PASSWORD }}
       NAVER_STORAGE_STATE_JSON: ${{ secrets.NAVER_STORAGE_STATE_JSON }}
       REQUIRE_LOGIN: ${{ vars.REQUIRE_LOGIN || 'true' }}
-      MAX_POSTS: ${{ vars.MAX_POSTS || '8' }}
-      RECENT_DAYS: ${{ vars.RECENT_DAYS || '2' }}
+      MAX_POSTS: ${{ vars.MAX_POSTS || '80' }}
+      CLASS_POST_LIMIT: ${{ vars.CLASS_POST_LIMIT || '2' }}
+      HOMEWORK_AUTHOR: ${{ vars.HOMEWORK_AUTHOR || '그래그래그레이스' }}
       TIME_ZONE: ${{ vars.TIME_ZONE || 'Asia/Seoul' }}
       HEADLESS: "true"
       OUTPUT_DIR: ./public
@@ -41,6 +45,9 @@ jobs:
       HTML_FILE: ./public/index.html
       STATE_FILE: ./public/run-state.json
       PAGE_TITLE: ${{ vars.PAGE_TITLE || 'TopStar 영어학원 숙제 체크리스트' }}
+      APP_LOGO_FILE: ./assets/topstar-logo.png
+      PAGES_URL: https://mlc-cpu.github.io/topstar_eng/
+      SHORT_URL: https://is.gd/qDMgMU
     steps:
       - name: Checkout
         uses: actions/checkout@v4

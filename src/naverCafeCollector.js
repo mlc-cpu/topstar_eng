@@ -180,12 +180,25 @@ async function getPostDetail(context, post) {
       delayMs: 250,
     });
 
+    const author = await pickFirstText(frame, [
+      ".article_info .nickname",
+      ".WriterInfo .nickname",
+      ".ArticleTitle .nickname",
+      ".writer_area .nickname",
+      ".article_writer",
+      ".nickname",
+    ], {
+      retries: 8,
+      delayMs: 250,
+    });
+
     return {
       postId: post.postId,
       url: post.url,
       title: normalizeText(title),
       bodyText,
       publishedAt: normalizeText(publishedAt),
+      author: normalizeText(author),
     };
   } finally {
     await detailPage.close();

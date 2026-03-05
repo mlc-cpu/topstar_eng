@@ -4,11 +4,13 @@
 
 ## 핵심 포인트
 
-- 최근 `RECENT_DAYS`(기본 2)개의 **게시일**만 노출 (예: 3/5, 3/3)
+- `그래그래그레이스` 작성 + 제목에 `반 숙제`가 포함된 글만 사용
+- 반별 최신 숙제 게시글 `2개`씩 노출 (`CLASS_POST_LIMIT`)
 - 체크 상태는 각 기기 `localStorage`에 저장
 - 정적 사이트라 GitHub Pages 배포 가능
 - 앱 열 때 1회 로드, 실행 중에는 상단 `새로고침` 버튼으로만 갱신
 - 수집/렌더링은 `npm run sync` 한 번으로 생성
+- 앱 아이콘은 `assets/topstar-logo.png`를 사용
 
 ## 설치된 skills.sh 스킬
 
@@ -26,7 +28,7 @@
 - 본문을 체크리스트 항목으로 파싱 + 게시글 날짜(`postDate`) 추출
 
 3. `src/main.js`
-- 최근 2일 필터 적용 후 `public/homework.json`, `public/index.html` 생성
+- 작성자/제목 필터 + 반별 개수 제한 적용 후 `public/homework.json`, `public/index.html` 생성
 
 4. `src/htmlTemplate.js`
 - 모바일 우선 체크리스트 UI 렌더링
@@ -50,7 +52,9 @@ cp .env.example .env
 - `NAVER_CAFE_BOARD_URL`
 
 권장값:
-- `RECENT_DAYS=2`
+- `HOMEWORK_AUTHOR=그래그래그레이스`
+- `CLASS_POST_LIMIT=2`
+- `MAX_POSTS=80`
 - `TIME_ZONE=Asia/Seoul`
 - `REQUIRE_LOGIN=true`
 
@@ -87,8 +91,8 @@ npm run remote:setup
 
 - 원격에서 `npm ci`, `playwright chromium` 설치
 - `launchd` 잡 등록:
-- `com.jayoc.engband.server` (상시 웹서버)
-- `com.jayoc.engband.sync` (30분 주기 동기화)
+- `com.jayoc.topstar_eng.server` (상시 웹서버)
+- `com.jayoc.topstar_eng.sync` (30분 주기 동기화)
 
 2. 원격 상태 확인
 
@@ -120,6 +124,8 @@ npm run remote:sync
 - 30분 주기 + 수동 실행 + `main` 푸시 시 배포
 - `public/` 폴더를 GitHub Pages로 게시
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정
+- Pages 주소: `https://mlc-cpu.github.io/topstar_eng/`
+- 짧은 주소: `https://is.gd/qDMgMU`
 
 ### GitHub Secrets
 
@@ -130,7 +136,8 @@ npm run remote:sync
 
 ### GitHub Variables(선택)
 
-- `RECENT_DAYS` (기본 `2`)
+- `HOMEWORK_AUTHOR` (기본 `그래그래그레이스`)
+- `CLASS_POST_LIMIT` (기본 `2`)
 - `TIME_ZONE` (기본 `Asia/Seoul`)
 - `MAX_POSTS`
 - `PAGE_TITLE`

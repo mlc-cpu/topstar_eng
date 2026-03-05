@@ -3,8 +3,8 @@ set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="$PROJECT_DIR/.logs"
-SYNC_LABEL="${SYNC_LABEL:-com.jayoc.engband.sync}"
-SERVER_LABEL="${SERVER_LABEL:-com.jayoc.engband.server}"
+SYNC_LABEL="${SYNC_LABEL:-com.jayoc.topstar_eng.sync}"
+SERVER_LABEL="${SERVER_LABEL:-com.jayoc.topstar_eng.server}"
 
 echo "launchctl status (filtered):"
 launchctl list | egrep "${SYNC_LABEL}|${SERVER_LABEL}" || true

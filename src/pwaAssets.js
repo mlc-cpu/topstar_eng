@@ -20,10 +20,16 @@ export function renderManifest({ pageTitle }) {
       lang: "ko",
       icons: [
         {
+          src: "./icon.png",
+          sizes: "1280x1280",
+          type: "image/png",
+          purpose: "any maskable",
+        },
+        {
           src: "./icon.svg",
           sizes: "any",
           type: "image/svg+xml",
-          purpose: "any maskable",
+          purpose: "any",
         },
       ],
     },
@@ -38,8 +44,10 @@ const STATIC_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./icon.png",
   "./icon.svg",
-  "./homework.json"
+  "./homework.json",
+  "./short-url.txt"
 ];
 
 self.addEventListener("install", (event) => {

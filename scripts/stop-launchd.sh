@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-SYNC_LABEL="${SYNC_LABEL:-com.jayoc.engband.sync}"
-SERVER_LABEL="${SERVER_LABEL:-com.jayoc.engband.server}"
+SYNC_LABEL="${SYNC_LABEL:-com.jayoc.topstar_eng.sync}"
+SERVER_LABEL="${SERVER_LABEL:-com.jayoc.topstar_eng.server}"
 LAUNCH_DIR="$HOME/Library/LaunchAgents"
 
 SYNC_PLIST="$LAUNCH_DIR/${SYNC_LABEL}.plist"

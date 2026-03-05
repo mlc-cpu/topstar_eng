@@ -20,8 +20,9 @@ export function renderHomeworkHtml({ pageTitle }) {
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="${title}" />
     <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.png" type="image/png" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./icon.svg" />
+    <link rel="apple-touch-icon" href="./icon.png" />
     <style>
       :root {
         --bg-top: #102a43;
@@ -87,6 +88,71 @@ export function renderHomeworkHtml({ pageTitle }) {
         line-height: 1.4;
       }
 
+      .class-control {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .class-picker {
+        min-height: 44px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(210, 225, 255, 0.35);
+      }
+
+      .class-current {
+        font-size: 0.8rem;
+        color: #d5e4ff;
+        line-height: 1.4;
+      }
+
+      .class-options {
+        margin-top: 8px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .class-options[hidden] {
+        display: none;
+      }
+
+      .class-group {
+        display: grid;
+        gap: 6px;
+      }
+
+      .class-group-title {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #d5e4ff;
+      }
+
+      .class-group-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .class-option {
+        min-height: 44px;
+        border-radius: 999px;
+        border: 1px solid rgba(210, 225, 255, 0.35);
+        padding: 10px 13px;
+        font-size: 0.82rem;
+        background: rgba(255, 255, 255, 0.12);
+        color: #eef4ff;
+      }
+
+      .class-option.active {
+        border-color: #b6ceff;
+        background: #e6efff;
+        color: #083c8c;
+        font-weight: 700;
+      }
+
       .toolbar {
         margin-top: 10px;
         display: flex;
@@ -100,6 +166,12 @@ export function renderHomeworkHtml({ pageTitle }) {
         font-size: 0.84rem;
         background: rgba(255, 255, 255, 0.16);
         color: #ffffff;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        opacity: 0.65;
+        cursor: default;
       }
 
       .list {
@@ -247,6 +319,11 @@ export function renderHomeworkHtml({ pageTitle }) {
       <section class="hero">
         <h1>${title}</h1>
         <div class="meta" id="status">데이터 로딩 중...</div>
+        <div class="class-control">
+          <button id="class-picker" class="class-picker" type="button" aria-expanded="false">기본 반 설정</button>
+          <div class="class-current" id="class-current">기본 반: 전체</div>
+        </div>
+        <div class="class-options" id="class-options" hidden></div>
         <div class="toolbar">
           <button id="refresh">새로고침</button>
         </div>
@@ -257,6 +334,45 @@ export function renderHomeworkHtml({ pageTitle }) {
 
     <script>
       const STORAGE_PREFIX = "homework-check:";
+      const DEFAULT_CLASS_KEY = "homework-default-class";
+      const CLASS_GROUPS = [
+        {
+          title: "월수금반",
+          options: [
+            { id: "Ace", label: "☆ Ace ☆" },
+            { id: "Star", label: "☆ Star ☆" },
+            { id: "Top", label: "☆ Top ☆" },
+            { id: "Peak", label: "☆ Peak ☆" },
+          ],
+        },
+        {
+          title: "화목반",
+          options: [
+            { id: "Champion", label: "☆ Champion ☆" },
+            { id: "Radiant", label: "☆ Radiant ☆" },
+          ],
+        },
+      ];
+      const PRESET_CLASS_IDS = CLASS_GROUPS.flatMap((group) =>
+        group.options.map((option) => option.id)
+      );
+      const PRESET_CLASS_SET = new Set(PRESET_CLASS_IDS);
+      const CLASS_LABEL_MAP = Object.fromEntries(
+        CLASS_GROUPS.flatMap((group) => group.options.map((option) => [option.id, option.label]))
+      );
+      const CLASS_ALIAS_MAP = {
+        ace: "Ace",
+        star: "Star",
+        top: "Top",
+        peak: "Peak",
+        champ: "Champion",
+        champion: "Champion",
+        radiant: "Radiant",
+      };
+      let cachedData = null;
+      let classPickerOpen = false;
+      let knownClasses = [...PRESET_CLASS_IDS];
+      let classesInPosts = [];
 
       function key(postId, itemId) {
         return STORAGE_PREFIX + postId + ":" + itemId;
@@ -272,6 +388,218 @@ export function renderHomeworkHtml({ pageTitle }) {
           localStorage.setItem(storageKey, "1");
         } else {
           localStorage.removeItem(storageKey);
+        }
+      }
+
+      function normalizeClassText(value) {
+        return String(value ?? "")
+          .replaceAll("☆", " ")
+          .replaceAll("★", " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function canonicalizeClassName(value) {
+        const cleaned = normalizeClassText(value);
+        if (!cleaned) {
+          return "";
+        }
+
+        const token = cleaned.toLowerCase().replace(/\s+/g, "");
+        return CLASS_ALIAS_MAP[token] || cleaned;
+      }
+
+      function getClassLabel(className) {
+        return CLASS_LABEL_MAP[className] || className;
+      }
+
+      function getDefaultClass() {
+        const stored = localStorage.getItem(DEFAULT_CLASS_KEY) || "";
+        const normalized = canonicalizeClassName(stored);
+        if (stored && normalized !== stored) {
+          localStorage.setItem(DEFAULT_CLASS_KEY, normalized);
+        }
+        return normalized;
+      }
+
+      function setDefaultClass(className) {
+        const normalized = canonicalizeClassName(className);
+        if (normalized) {
+          localStorage.setItem(DEFAULT_CLASS_KEY, normalized);
+        } else {
+          localStorage.removeItem(DEFAULT_CLASS_KEY);
+        }
+      }
+
+      function extractClassName(post) {
+        const explicitClass = canonicalizeClassName(post.className || post.classLabel || post.class);
+        if (explicitClass) {
+          return explicitClass;
+        }
+
+        const titleText = String(post.title || "").trim();
+        if (!titleText) {
+          return "기타";
+        }
+
+        const homeworkMatch = titleText.match(/^(.+?)\s*반\s*숙제/i);
+        if (homeworkMatch?.[1]) {
+          const className = canonicalizeClassName(homeworkMatch[1]);
+          if (className) {
+            return className;
+          }
+        }
+
+        for (const separator of ["//", "|", "｜"]) {
+          const separatorIndex = titleText.indexOf(separator);
+          if (separatorIndex > -1) {
+            const className = canonicalizeClassName(titleText.slice(0, separatorIndex));
+            if (className) {
+              return className;
+            }
+          }
+        }
+
+        return canonicalizeClassName(titleText);
+      }
+
+      function collectClassNames(posts) {
+        const seen = new Set(PRESET_CLASS_IDS);
+        const posted = new Set();
+        for (const post of posts) {
+          const className = extractClassName(post);
+          if (className) {
+            seen.add(className);
+            posted.add(className);
+          }
+        }
+        return {
+          all: Array.from(seen),
+          inPosts: Array.from(posted),
+        };
+      }
+
+      function prioritizePosts(posts) {
+        const defaultClass = getDefaultClass();
+        if (!defaultClass) {
+          return [...posts];
+        }
+
+        const preferred = [];
+        const others = [];
+        for (const post of posts) {
+          if (extractClassName(post) === defaultClass) {
+            preferred.push(post);
+          } else {
+            others.push(post);
+          }
+        }
+        return preferred.concat(others);
+      }
+
+      function updateClassSummary() {
+        const classCurrentEl = document.getElementById("class-current");
+        const defaultClass = getDefaultClass();
+        if (!defaultClass) {
+          classCurrentEl.textContent = "기본 반: 전체";
+          return;
+        }
+
+        const classLabel = getClassLabel(defaultClass);
+        if (classesInPosts.includes(defaultClass)) {
+          classCurrentEl.textContent = "기본 반: " + classLabel;
+          return;
+        }
+
+        classCurrentEl.textContent = "기본 반: " + classLabel + " (현재 공지 없음)";
+      }
+
+      async function chooseDefaultClass(className) {
+        setDefaultClass(className);
+        classPickerOpen = false;
+        renderClassOptions();
+        updateClassSummary();
+        await render({ useCache: true });
+      }
+
+      function createClassOptionButton(option, defaultClass) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "class-option";
+        button.textContent = option.label;
+        if (option.value === defaultClass) {
+          button.classList.add("active");
+        }
+        button.addEventListener("click", () => {
+          chooseDefaultClass(option.value).catch(() => undefined);
+        });
+        return button;
+      }
+
+      function renderClassOptions() {
+        const classPickerEl = document.getElementById("class-picker");
+        const classOptionsEl = document.getElementById("class-options");
+        const defaultClass = getDefaultClass();
+
+        classPickerEl.setAttribute("aria-expanded", classPickerOpen ? "true" : "false");
+        classOptionsEl.hidden = !classPickerOpen;
+        classOptionsEl.innerHTML = "";
+
+        const allGroup = document.createElement("div");
+        allGroup.className = "class-group";
+        const allList = document.createElement("div");
+        allList.className = "class-group-list";
+        allList.appendChild(
+          createClassOptionButton({ label: "전체", value: "" }, defaultClass)
+        );
+        allGroup.appendChild(allList);
+        classOptionsEl.appendChild(allGroup);
+
+        for (const group of CLASS_GROUPS) {
+          const groupBlock = document.createElement("div");
+          groupBlock.className = "class-group";
+
+          const groupTitle = document.createElement("div");
+          groupTitle.className = "class-group-title";
+          groupTitle.textContent = group.title;
+          groupBlock.appendChild(groupTitle);
+
+          const groupList = document.createElement("div");
+          groupList.className = "class-group-list";
+          for (const option of group.options) {
+            groupList.appendChild(
+              createClassOptionButton(
+                { label: option.label, value: option.id },
+                defaultClass
+              )
+            );
+          }
+          groupBlock.appendChild(groupList);
+          classOptionsEl.appendChild(groupBlock);
+        }
+
+        const extraClasses = knownClasses.filter((className) => !PRESET_CLASS_SET.has(className));
+        if (extraClasses.length > 0) {
+          const extraBlock = document.createElement("div");
+          extraBlock.className = "class-group";
+
+          const extraTitle = document.createElement("div");
+          extraTitle.className = "class-group-title";
+          extraTitle.textContent = "기타 반";
+          extraBlock.appendChild(extraTitle);
+
+          const extraList = document.createElement("div");
+          extraList.className = "class-group-list";
+          for (const className of extraClasses) {
+            extraList.appendChild(
+              createClassOptionButton(
+                { label: className, value: className },
+                defaultClass
+              )
+            );
+          }
+          extraBlock.appendChild(extraList);
+          classOptionsEl.appendChild(extraBlock);
         }
       }
 
@@ -375,19 +703,27 @@ export function renderHomeworkHtml({ pageTitle }) {
         contentEl.appendChild(empty);
       }
 
-      async function render() {
+      async function render({ useCache = false } = {}) {
         const statusEl = document.getElementById("status");
         const contentEl = document.getElementById("content");
 
         try {
-          const data = await loadData();
+          const data = useCache && cachedData ? cachedData : await loadData();
+          cachedData = data;
           contentEl.innerHTML = "";
 
           const posts = Array.isArray(data.posts) ? data.posts : [];
-          if (posts.length < 1) {
+          const classCollection = collectClassNames(posts);
+          knownClasses = classCollection.all;
+          classesInPosts = classCollection.inPosts;
+          updateClassSummary();
+          renderClassOptions();
+
+          const orderedPosts = prioritizePosts(posts);
+          if (orderedPosts.length < 1) {
             renderEmpty(contentEl);
           } else {
-            for (const post of posts) {
+            for (const post of orderedPosts) {
               contentEl.appendChild(renderPost(post));
             }
           }
@@ -395,6 +731,10 @@ export function renderHomeworkHtml({ pageTitle }) {
           const generatedAt = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : "알 수 없음";
           statusEl.textContent = "업데이트 " + generatedAt;
         } catch (error) {
+          knownClasses = [...PRESET_CLASS_IDS];
+          classesInPosts = [];
+          updateClassSummary();
+          renderClassOptions();
           contentEl.innerHTML = "";
           const block = document.createElement("div");
           block.className = "error";
@@ -404,13 +744,33 @@ export function renderHomeworkHtml({ pageTitle }) {
         }
       }
 
+      document.getElementById("class-picker").addEventListener("click", () => {
+        classPickerOpen = !classPickerOpen;
+        renderClassOptions();
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!classPickerOpen) {
+          return;
+        }
+
+        const classPickerEl = document.getElementById("class-picker");
+        const classOptionsEl = document.getElementById("class-options");
+        if (classPickerEl.contains(event.target) || classOptionsEl.contains(event.target)) {
+          return;
+        }
+
+        classPickerOpen = false;
+        renderClassOptions();
+      });
+
       document.getElementById("refresh").addEventListener("click", async (event) => {
         const button = event.currentTarget;
         const oldText = button.textContent;
         button.disabled = true;
         button.textContent = "새로고침 중...";
         try {
-          await render();
+          await render({ useCache: false });
         } finally {
           button.textContent = oldText;
           button.disabled = false;
@@ -423,7 +783,7 @@ export function renderHomeworkHtml({ pageTitle }) {
         });
       }
 
-      render();
+      render({ useCache: false });
     </script>
   </body>
 </html>`;
