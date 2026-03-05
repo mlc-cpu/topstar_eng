@@ -551,7 +551,7 @@ export async function collectHomeworkPosts() {
       linksByClass,
       (item) => `${item.className || ""}:${item.postId}`
     );
-    const uniqueLinks = uniqueBy(classScopedLinks, (item) => item.postId).slice(0, config.maxPosts);
+    const uniqueLinks = uniqueBy(classScopedLinks, (item) => item.postId);
     console.log(
       `[collect] class-scoped links=${classScopedLinks.length}, unique posts=${uniqueLinks.length}`
     );
