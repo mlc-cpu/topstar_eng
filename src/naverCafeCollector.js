@@ -464,6 +464,18 @@ async function mapWithConcurrency(items, limit, mapper) {
   return results;
 }
 
+function countByClass(items) {
+  const counts = new Map();
+  for (const item of items) {
+    const key = item?.className || "(empty)";
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([className, count]) => `${className}:${count}`)
+    .join(", ");
+}
+
 export async function collectHomeworkPosts() {
   if (!config.boardUrl) {
     throw new Error("Missing required environment variable: NAVER_CAFE_BOARD_URL");
@@ -543,6 +555,7 @@ export async function collectHomeworkPosts() {
     console.log(
       `[collect] class-scoped links=${classScopedLinks.length}, unique posts=${uniqueLinks.length}`
     );
+    console.log(`[collect] class link distribution ${countByClass(classScopedLinks)}`);
 
     if (config.requireLogin && uniqueLinks.length < 1) {
       throw loginRequiredError();
@@ -586,6 +599,7 @@ export async function collectHomeworkPosts() {
         .filter(Boolean),
       (item) => `${item.className || ""}:${item.postId}`
     );
+    console.log(`[collect] collected post distribution ${countByClass(posts)}`);
 
     if (config.requireLogin && posts.length < 1) {
       throw loginRequiredError();
