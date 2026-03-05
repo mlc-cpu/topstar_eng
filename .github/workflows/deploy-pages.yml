@@ -30,6 +30,7 @@ jobs:
       NAVER_CAFE_BOARD_URL: ${{ secrets.NAVER_CAFE_BOARD_URL }}
       NAVER_ID: ${{ secrets.NAVER_ID }}
       NAVER_PASSWORD: ${{ secrets.NAVER_PASSWORD }}
+      NAVER_STORAGE_STATE_JSON: ${{ secrets.NAVER_STORAGE_STATE_JSON }}
       REQUIRE_LOGIN: ${{ vars.REQUIRE_LOGIN || 'true' }}
       MAX_POSTS: ${{ vars.MAX_POSTS || '8' }}
       RECENT_DAYS: ${{ vars.RECENT_DAYS || '2' }}
@@ -57,10 +58,11 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Restore optional storage state
-        if: ${{ secrets.NAVER_STORAGE_STATE_JSON != '' }}
         run: |
-          mkdir -p .state
-          printf '%s' '${{ secrets.NAVER_STORAGE_STATE_JSON }}' > .state/naver-storage-state.json
+          if [ -n "${NAVER_STORAGE_STATE_JSON:-}" ]; then
+            mkdir -p .state
+            printf '%s' "$NAVER_STORAGE_STATE_JSON" > .state/naver-storage-state.json
+          fi
 
       - name: Build static page
         run: npm run sync
