@@ -94,6 +94,26 @@ async function loginIfNeeded(page) {
   }
 }
 
+async function ensureAuthenticatedSession(page) {
+  if (!config.requireLogin) {
+    return;
+  }
+
+  if (!config.naverId || !config.naverPassword) {
+    return;
+  }
+
+  const loginEntryUrl =
+    `https://nid.naver.com/nidlogin.login?mode=form&url=${encodeURIComponent(config.boardUrl)}`;
+
+  await page.goto(loginEntryUrl, {
+    waitUntil: "domcontentloaded",
+    timeout: 45_000,
+  });
+  await page.waitForTimeout(800);
+  await loginIfNeeded(page);
+}
+
 async function pickFirstText(frame, selectors, options = {}) {
   const retries = Math.max(1, options.retries ?? 1);
   const delayMs = Math.max(0, options.delayMs ?? 350);
@@ -459,6 +479,8 @@ export async function collectHomeworkPosts() {
 
   try {
     const page = await context.newPage();
+
+    await ensureAuthenticatedSession(page);
 
     await page.goto(config.boardUrl, {
       waitUntil: "domcontentloaded",
