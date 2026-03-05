@@ -161,12 +161,29 @@ export function toAbsoluteNaverUrl(href) {
 }
 
 export function extractChecklistItems(rawText) {
+  function isTransientLine(line) {
+    const compact = normalizeText(line).replace(/\s+/g, "");
+    if (!compact) {
+      return true;
+    }
+
+    return (
+      compact.includes("로딩중입니다") ||
+      compact.includes("잠시만기다려주세요") ||
+      compact.includes("잠시만기다려") ||
+      /^loading/i.test(compact)
+    );
+  }
+
   const text = normalizeText(rawText);
   if (!text) {
     return [];
   }
 
-  const lines = text.split("\n").map((line) => line.trim());
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => !isTransientLine(line));
   const bulletPattern = /^(?:[-*+]|[•●◦▪]|\[[xX ]\]|\d+[.)])\s+/;
 
   const checklist = lines
@@ -180,7 +197,10 @@ export function extractChecklistItems(rawText) {
     return uniqueBy(checklist, (line) => line.toLowerCase()).slice(0, 30);
   }
 
-  const fallback = lines.filter((line) => line.length > 2).slice(0, 10);
+  const fallback = lines
+    .filter((line) => line.length > 2)
+    .filter((line) => !isTransientLine(line))
+    .slice(0, 10);
   return uniqueBy(fallback, (line) => line.toLowerCase());
 }
 

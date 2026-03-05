@@ -66,6 +66,21 @@ function loginRequiredError() {
   );
 }
 
+function looksLikeLoadingPlaceholder(text) {
+  const normalized = normalizeText(text);
+  if (!normalized) {
+    return false;
+  }
+
+  const compact = normalized.replace(/\s+/g, "");
+  return (
+    compact.includes("로딩중입니다") ||
+    compact.includes("잠시만기다려주세요") ||
+    compact.includes("잠시만기다려") ||
+    /^loading/i.test(compact)
+  );
+}
+
 async function loginIfNeeded(page) {
   const url = page.url();
   const loginUrlPattern = /nidlogin\.login/i;
@@ -297,19 +312,35 @@ async function getPostDetail(context, post) {
         delayMs: 300,
       })) || post.title;
 
-    const bodyText = await pickFirstText(frame, [
-      ".se-main-container",
-      "#postContent",
-      ".article_viewer",
-      ".ContentRenderer",
-      ".article_container",
-      ".ArticleContentBox",
-      "article",
-      "#app",
-    ], {
-      retries: 18,
-      delayMs: 350,
-    });
+    let bodyText = "";
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      bodyText = await pickFirstText(
+        frame,
+        [
+          ".se-main-container",
+          "#postContent",
+          ".article_viewer",
+          ".ContentRenderer",
+          ".article_container",
+          ".ArticleContentBox",
+          "article",
+        ],
+        {
+          retries: 18,
+          delayMs: 350,
+        }
+      );
+
+      if (bodyText && !looksLikeLoadingPlaceholder(bodyText)) {
+        break;
+      }
+
+      await detailPage.waitForTimeout(500);
+    }
+
+    if (looksLikeLoadingPlaceholder(bodyText)) {
+      bodyText = "";
+    }
 
     const publishedAt = await pickFirstText(frame, [
       ".article_info .date",
@@ -567,9 +598,6 @@ export async function collectHomeworkPosts() {
       async (link) => {
         try {
           const detail = await getPostDetail(context, link);
-          if (!normalizeText(detail.bodyText)) {
-            return null;
-          }
           return detail;
         } catch (error) {
           console.error(`[collect] failed for post ${link.postId}: ${error.message}`);
