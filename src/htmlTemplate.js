@@ -594,8 +594,49 @@ export function renderHomeworkHtml({ pageTitle }) {
         contentEl.appendChild(empty);
       }
 
-      function buildStatusText(generatedAt, refreshResult) {
-        const base = "업데이트 " + generatedAt;
+      function formatElapsedText(generatedAtIso) {
+        const parsed = new Date(generatedAtIso);
+        if (Number.isNaN(parsed.getTime())) {
+          return "방금 전";
+        }
+
+        const diffMs = Date.now() - parsed.getTime();
+        if (diffMs <= 0 || diffMs < 60_000) {
+          return "방금 전";
+        }
+
+        const now = new Date();
+        const sameHour =
+          now.getFullYear() === parsed.getFullYear() &&
+          now.getMonth() === parsed.getMonth() &&
+          now.getDate() === parsed.getDate() &&
+          now.getHours() === parsed.getHours();
+
+        const totalMinutes = Math.floor(diffMs / 60_000);
+        const days = Math.floor(totalMinutes / 1440);
+        const hours = Math.floor((totalMinutes % 1440) / 60);
+        const minutes = totalMinutes % 60;
+
+        if (sameHour) {
+          return minutes + "분 전";
+        }
+
+        const parts = [];
+        if (days > 0) {
+          parts.push(days + "일");
+        }
+        if (hours > 0) {
+          parts.push(hours + "시간");
+        }
+        if (minutes > 0) {
+          parts.push(minutes + "분");
+        }
+
+        return parts.join(" ") + " 전";
+      }
+
+      function buildStatusText(generatedAtIso, refreshResult) {
+        const base = "업데이트 " + formatElapsedText(generatedAtIso);
         if (!refreshResult || typeof refreshResult !== "object") {
           return base;
         }
@@ -638,7 +679,7 @@ export function renderHomeworkHtml({ pageTitle }) {
             }
           }
 
-          const generatedAt = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : "알 수 없음";
+          const generatedAt = data.generatedAt || "";
           statusEl.textContent = buildStatusText(generatedAt, refreshResult);
         } catch (error) {
           knownClasses = [...CLASS_ORDER];
