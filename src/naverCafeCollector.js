@@ -15,6 +15,15 @@ import {
 
 const CLASS_MENU_NAMES = ["Ace", "Star", "Top", "Peak", "Champion", "Radiant"];
 const CLASS_MENU_SET = new Set(CLASS_MENU_NAMES);
+const CLASS_MENU_FUZZY_ALIASES = [
+  ["champion", "Champion"],
+  ["champ", "Champion"],
+  ["radiant", "Radiant"],
+  ["ace", "Ace"],
+  ["star", "Star"],
+  ["peak", "Peak"],
+  ["top", "Top"],
+];
 
 async function waitForMainFrame(page) {
   for (let i = 0; i < 20; i += 1) {
@@ -142,6 +151,56 @@ async function getPostLinks(frame, options = {}) {
   return prioritized.slice(0, limit);
 }
 
+function detectClassFromMenuText(text) {
+  const normalized = normalizeText(text)
+    .replaceAll("☆", " ")
+    .replaceAll("★", " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!normalized) {
+    return "";
+  }
+
+  const canonical = canonicalizeClassName(normalized);
+  if (CLASS_MENU_SET.has(canonical)) {
+    return canonical;
+  }
+
+  for (const [alias, className] of CLASS_MENU_FUZZY_ALIASES) {
+    const boundaryPattern = new RegExp(`\\b${alias}\\b`, "i");
+    if (boundaryPattern.test(normalized)) {
+      return className;
+    }
+  }
+
+  const compact = normalized.toLowerCase().replace(/[^a-z]/g, "");
+  for (const [alias, className] of CLASS_MENU_FUZZY_ALIASES) {
+    if (compact === alias || compact === `${alias}n` || compact === `${alias}new`) {
+      return className;
+    }
+  }
+
+  return "";
+}
+
+async function collectMenuAnchors(context) {
+  try {
+    const menus = await context.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll("a[href]"));
+      return anchors
+        .map((anchor) => ({
+          href: anchor.getAttribute("href") || "",
+          text: (anchor.textContent || "").trim(),
+        }))
+        .filter((item) => item.href.includes("/menus/"))
+        .filter((item) => item.text);
+    });
+    return Array.isArray(menus) ? menus : [];
+  } catch {
+    return [];
+  }
+}
+
 function isLikelyHomeworkTitle(title) {
   const normalizedTitle = normalizeText(title);
   if (!normalizedTitle) {
@@ -258,21 +317,16 @@ function ensureListViewUrl(url) {
   return `${url}${url.includes("?") ? "&" : "?"}viewType=L`;
 }
 
-async function discoverClassMenus(frame, fallbackUrl) {
-  const rawMenus = await frame.evaluate(() => {
-    const anchors = Array.from(document.querySelectorAll("a[href]"));
-    return anchors
-      .map((anchor) => ({
-        href: anchor.getAttribute("href") || "",
-        text: (anchor.textContent || "").trim(),
-      }))
-      .filter((item) => item.href.includes("/menus/"))
-      .filter((item) => item.text);
-  });
+async function discoverClassMenus(page, frame, fallbackUrl) {
+  const [frameMenus, pageMenus] = await Promise.all([
+    collectMenuAnchors(frame),
+    collectMenuAnchors(page),
+  ]);
+  const rawMenus = uniqueBy(frameMenus.concat(pageMenus), (item) => `${item.href}::${item.text}`);
 
   const discovered = new Map();
   for (const menu of rawMenus) {
-    const className = canonicalizeClassName(menu.text);
+    const className = detectClassFromMenuText(menu.text);
     if (!CLASS_MENU_SET.has(className)) {
       continue;
     }
@@ -288,19 +342,23 @@ async function discoverClassMenus(frame, fallbackUrl) {
   }
 
   if (discovered.size > 0) {
-    return CLASS_MENU_NAMES.filter((className) => discovered.has(className)).map((className) => ({
+    const resolved = CLASS_MENU_NAMES.filter((className) => discovered.has(className)).map((className) => ({
       className,
       url: discovered.get(className),
     }));
+    console.log(`[collect] class menus: ${resolved.map((item) => item.className).join(", ")}`);
+    return resolved;
   }
 
   const fallbackClassName = canonicalizeClassName(extractClassNameFromTitle(fallbackUrl || ""));
-  return [
+  const fallbackMenus = [
     {
       className: fallbackClassName || "",
       url: ensureListViewUrl(fallbackUrl),
     },
   ];
+  console.log("[collect] class menu discovery fallback used");
+  return fallbackMenus;
 }
 
 async function mapWithConcurrency(items, limit, mapper) {
@@ -365,7 +423,7 @@ export async function collectHomeworkPosts() {
       throw loginRequiredError();
     }
 
-    const classMenus = await discoverClassMenus(frame, config.boardUrl);
+    const classMenus = await discoverClassMenus(page, frame, config.boardUrl);
     const menuPostScanLimit = Math.max(8, config.classPostLimit * 4);
 
     const linksByClass = [];
