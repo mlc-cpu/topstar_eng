@@ -1,0 +1,58 @@
+version: 1
+project: naver-cafe-homework-sync
+
+orchestrator:
+  id: homework-orchestrator
+  objective: >-
+    Naver Cafe 게시판의 최신 가정통신문(숙제)을 수집하고,
+    체크리스트 JSON/HTML을 생성해 태블릿에서 자동으로 갱신되도록 운영한다.
+  sequence:
+    - cafe-collector-agent
+    - homework-parser-agent
+    - html-publisher-agent
+    - schedule-ops-agent
+
+subagents:
+  - id: cafe-collector-agent
+    responsibility: 게시판 접근, 로그인, 신규 숙제 게시글 수집
+    inputs:
+      - NAVER_ID
+      - NAVER_PASSWORD
+      - NAVER_CAFE_BOARD_URL
+    outputs:
+      - raw post list (id, title, bodyText, publishedAt, url)
+    skills:
+      - playwright-cli (global)
+      - playwright-explore-website (skills.sh)
+      - playwright-automation-fill-in-form (skills.sh)
+
+  - id: homework-parser-agent
+    responsibility: 게시글 본문에서 숙제 항목 추출 및 체크리스트 데이터 생성
+    inputs:
+      - raw post list
+    outputs:
+      - homework.json compatible checklist entries
+    skills:
+      - local parser module (src/checklistBuilder.js)
+
+  - id: html-publisher-agent
+    responsibility: 태블릿용 체크리스트 페이지 렌더링 및 정적 파일 배포
+    inputs:
+      - parsed checklist data
+    outputs:
+      - public/index.html
+      - public/homework.json
+    skills:
+      - playwright-generate-test (skills.sh)
+      - webapp-testing (global)
+
+  - id: schedule-ops-agent
+    responsibility: 주기 실행, 장애 확인, 상태 파일 관리
+    inputs:
+      - sync script
+      - state file
+    outputs:
+      - scheduled updates
+      - run-state.json
+    skills:
+      - cron (skills.sh)

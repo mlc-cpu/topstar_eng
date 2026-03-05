@@ -1,0 +1,82 @@
+name: Build and Deploy Homework Page
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-pages.yml"
+      - ".env.example"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NAVER_CAFE_BOARD_URL: ${{ secrets.NAVER_CAFE_BOARD_URL }}
+      NAVER_ID: ${{ secrets.NAVER_ID }}
+      NAVER_PASSWORD: ${{ secrets.NAVER_PASSWORD }}
+      REQUIRE_LOGIN: ${{ vars.REQUIRE_LOGIN || 'true' }}
+      MAX_POSTS: ${{ vars.MAX_POSTS || '8' }}
+      RECENT_DAYS: ${{ vars.RECENT_DAYS || '2' }}
+      TIME_ZONE: ${{ vars.TIME_ZONE || 'Asia/Seoul' }}
+      HEADLESS: "true"
+      OUTPUT_DIR: ./public
+      DATA_FILE: ./public/homework.json
+      HTML_FILE: ./public/index.html
+      STATE_FILE: ./public/run-state.json
+      PAGE_TITLE: ${{ vars.PAGE_TITLE || 'TopStar 영어학원 숙제 체크리스트' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Restore optional storage state
+        if: ${{ secrets.NAVER_STORAGE_STATE_JSON != '' }}
+        run: |
+          mkdir -p .state
+          printf '%s' '${{ secrets.NAVER_STORAGE_STATE_JSON }}' > .state/naver-storage-state.json
+
+      - name: Build static page
+        run: npm run sync
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

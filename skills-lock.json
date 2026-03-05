@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "cron": {
+      "source": "chaterm/terminal-skills",
+      "sourceType": "github",
+      "computedHash": "374e08aab7c38effc16afd36c726a0c8ca410e34cfa59e431b1ec30c4a5e71ac"
+    },
+    "playwright-automation-fill-in-form": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "05c39652cc1ef6a3066221d77d51e208f88f3ac8cbdd7ffe57a99de93776efe7"
+    },
+    "playwright-explore-website": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "ac361696198c2db22a0f9d3aa456d2f83c9f0110bf00d6ca529f735395fe3a5c"
+    },
+    "playwright-generate-test": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "8f963da3e25f705ff39755b8b990f20da0c0320cb86ac83fcc4d2d4eca91f6e4"
+    }
+  }
+}
