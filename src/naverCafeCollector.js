@@ -126,23 +126,35 @@ async function pickFirstText(frame, selectors, options = {}) {
 async function getPostLinks(frame, options = {}) {
   const limit = Math.max(1, options.limit ?? config.maxPosts);
   const rawLinks = await frame.evaluate(() => {
-    const anchors = Array.from(document.querySelectorAll("a[href]"));
+    function isArticleHref(href) {
+      return (
+        href.includes("/articles/") ||
+        href.includes("ArticleRead.nhn") ||
+        href.includes("articleid=") ||
+        href.includes("javascript:goArticle(")
+      );
+    }
 
-    return anchors
-      .map((anchor) => {
-        const href = anchor.getAttribute("href") || "";
-        const title = (anchor.textContent || "").trim();
-        return { href, title };
-      })
-      .filter((item) => {
-        const href = item.href || "";
-        return (
-          href.includes("/articles/") ||
-          href.includes("ArticleRead.nhn") ||
-          href.includes("articleid=") ||
-          href.includes("javascript:goArticle(")
-        );
-      });
+    function collect(selector) {
+      return Array.from(document.querySelectorAll(selector))
+        .map((anchor) => ({
+          href: anchor.getAttribute("href") || "",
+          title: (anchor.textContent || "").trim(),
+        }))
+        .filter((item) => isArticleHref(item.href));
+    }
+
+    const boardListLinks = collect(".board-list a.article[href]");
+    if (boardListLinks.length > 0) {
+      return boardListLinks;
+    }
+
+    const articleClassLinks = collect("a.article[href]");
+    if (articleClassLinks.length > 0) {
+      return articleClassLinks;
+    }
+
+    return collect("a[href]");
   });
 
   const links = rawLinks
