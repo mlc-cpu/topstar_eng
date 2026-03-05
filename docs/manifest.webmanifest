@@ -1,0 +1,26 @@
+{
+  "name": "TopStar 영어학원 숙제 체크리스트",
+  "short_name": "TopStar 숙제",
+  "description": "TopStar 영어학원 숙제 체크리스트 웹앱",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1526",
+  "theme_color": "#0f172a",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "1280x1280",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

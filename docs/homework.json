@@ -1,0 +1,430 @@
+{
+  "generatedAt": "2026-03-05T17:05:09.928Z",
+  "source": {
+    "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
+    "maxPosts": 80,
+    "detailConcurrency": 4,
+    "classPostLimit": 2,
+    "homeworkAuthor": "그래그래그레이스",
+    "recentPolicy": "author-and-homework-signal-per-class-limit",
+    "refreshCooldownSeconds": 300,
+    "quietHoursStart": 0,
+    "quietHoursEnd": 6,
+    "timeZone": "Asia/Seoul",
+    "pagesUrl": "https://mlc-cpu.github.io/topstar_eng/",
+    "shortUrl": "https://is.gd/qDMgMU"
+  },
+  "allPostCount": 31,
+  "filteredPostCount": 31,
+  "matchedClassCount": 6,
+  "posts": [
+    {
+      "postId": "4902",
+      "title": "ACE // Wednesdasy, March 4, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4902?boardtype=L&menuid=38&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Ace",
+      "publishedAt": "2026.03.04. 15:11",
+      "postDate": "2026-03-04",
+      "items": [
+        {
+          "id": "ba5ffede6580",
+          "text": "Can Elephants Paint? O녹음"
+        },
+        {
+          "id": "51e231c9054f",
+          "text": "Shadow in the Snow OO듣기 + '오우' 동그라미"
+        },
+        {
+          "id": "8ef40dc06f55",
+          "text": "W.S 37, 38쪽"
+        },
+        {
+          "id": "dc04df433f43",
+          "text": "SSB 36,37쪽 O녹음"
+        },
+        {
+          "id": "240a6d416763",
+          "text": "R/L"
+        },
+        {
+          "id": "52869f40088c",
+          "text": "** 개학 후 아이들이 숙제가 많아 힘들어하는 모습이 보여, 새학기에 잘 적응할 수 있도록 독서록과 VOCA 숙제를 조금 줄여 부담을 덜어주려 합니다."
+        }
+      ]
+    },
+    {
+      "postId": "4872",
+      "title": "ACE // Friday, February 27, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4872?boardtype=L&menuid=38&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Ace",
+      "publishedAt": "2026.02.27. 14:52",
+      "postDate": "2026-02-27",
+      "items": [
+        {
+          "id": "b7c239635b09",
+          "text": "Jungle Fun O/O"
+        },
+        {
+          "id": "4706bb2f1a6d",
+          "text": "Can Elephants Paint? O/OO"
+        },
+        {
+          "id": "75afe2f097e4",
+          "text": "W.S 34, 36쪽"
+        },
+        {
+          "id": "459f89dd7020",
+          "text": "W.S 숫자 쓰기 1~100까지 한 줄만 + 읽기O녹화"
+        },
+        {
+          "id": "29ccd7f39cbd",
+          "text": "이번 주는 새 학기 준비 기간이라 별도의 단어(VOCA)와 R/L 숙제가 없습니다. 남은 기간 알차게 보내고, 더 성장한 모습으로 새 학년에 만나요! 모두 새 학기 준비 잘하세요!"
+        }
+      ]
+    },
+    {
+      "postId": "4904",
+      "title": "STAR // Wednesday, March 04, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4904?boardtype=L&menuid=30&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Star",
+      "publishedAt": "2026.03.04. 16:41",
+      "postDate": "2026-03-04",
+      "items": [
+        {
+          "id": "2b93ba5b4685",
+          "text": "Frog and Toad O/O"
+        },
+        {
+          "id": "d87eec96e8a8",
+          "text": "2. R/L 듣고 줄거리 쓰기 ( 책 1/2 )"
+        },
+        {
+          "id": "ac21199ba188",
+          "text": "W.S 58쪽"
+        },
+        {
+          "id": "850d996db144",
+          "text": "문법 : ~47쪽 오답 노트"
+        },
+        {
+          "id": "1f0751dcb29e",
+          "text": "문법 : ~ 53쪽 풀기"
+        }
+      ]
+    },
+    {
+      "postId": "4874",
+      "title": "STAR // Friday, February 27, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4874?boardtype=L&menuid=30&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Star",
+      "publishedAt": "2026.02.27. 16:16",
+      "postDate": "2026-02-27",
+      "items": [
+        {
+          "id": "3404d658a05b",
+          "text": "A Banjo Trick O녹음"
+        },
+        {
+          "id": "d0d3ae602b95",
+          "text": "Frog and Toad O/OO"
+        },
+        {
+          "id": "39b48596d1ca",
+          "text": "단어 - Frog 영어 쓰기"
+        },
+        {
+          "id": "7319d9c54731",
+          "text": "W.S ~ 57쪽 + 60쪽 My List of Things to do"
+        },
+        {
+          "id": "41d4cab7df5c",
+          "text": "문법 : ~43쪽 오답 노트"
+        },
+        {
+          "id": "e0281b65612d",
+          "text": "문법 : ~ 47쪽 풀기"
+        }
+      ]
+    },
+    {
+      "postId": "4906",
+      "title": "TOP // Wednesday, March 04, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4906?boardtype=L&menuid=22&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Top",
+      "publishedAt": "2026.03.04. 17:53",
+      "postDate": "2026-03-04",
+      "items": [
+        {
+          "id": "e774767b80b3",
+          "text": "Unit 11 OO/OO + W.B + 해석"
+        },
+        {
+          "id": "b1e462bda16e",
+          "text": "Unit 12 OO/OO + S.B + 발음, 강세"
+        },
+        {
+          "id": "dd0190163f5a",
+          "text": "단어 오답 노트 + 단어 외우기"
+        },
+        {
+          "id": "9941b2c1af98",
+          "text": "문법 : 66,67쪽 오답 분석해오기 - 책"
+        },
+        {
+          "id": "6f30e2c40f18",
+          "text": "문법 : ~75쪽"
+        }
+      ]
+    },
+    {
+      "postId": "4878",
+      "title": "TOP // Friday, February 27, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4878?boardtype=L&menuid=22&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Top",
+      "publishedAt": "2026.02.27. 17:52",
+      "postDate": "2026-02-27",
+      "items": [
+        {
+          "id": "bbc339c08e2f",
+          "text": "Unit 10 OO/OO + W.B + 해석"
+        },
+        {
+          "id": "a396214fafa7",
+          "text": "Unit 11 OO/OO + S.B + 발음, 강세"
+        },
+        {
+          "id": "05d5ea769976",
+          "text": "단어 외우기 + 오답 노트"
+        },
+        {
+          "id": "41058c3bdae2",
+          "text": "문법 : ~ 65쪽 오답노트"
+        },
+        {
+          "id": "112d6e6cc845",
+          "text": "문법 : 66 ~ 67쪽 풀기"
+        },
+        {
+          "id": "ee8755a64389",
+          "text": "R/L"
+        }
+      ]
+    },
+    {
+      "postId": "4907",
+      "title": "PEAK // Wednesday, March 04, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4907?boardtype=L&menuid=12&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Peak",
+      "publishedAt": "2026.03.04. 19:18",
+      "postDate": "2026-03-04",
+      "items": [
+        {
+          "id": "2416f248e07c",
+          "text": "Unit 4 OO/OO + W.B + 해석"
+        },
+        {
+          "id": "5effc84c9f73",
+          "text": "Unit 5 OO/OO + S.B + 발음, 강세"
+        },
+        {
+          "id": "e818dd7ed57c",
+          "text": "단어 오답 노트 + 단어 외우기 Day 2,3"
+        },
+        {
+          "id": "2715e0de1dd7",
+          "text": "문법 : 오답 노트"
+        }
+      ]
+    },
+    {
+      "postId": "4879",
+      "title": "PEAK // Friday, February 27, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4879?boardtype=L&menuid=12&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Peak",
+      "publishedAt": "2026.02.27. 19:18",
+      "postDate": "2026-02-27",
+      "items": [
+        {
+          "id": "9482efa38c80",
+          "text": "Unit 3 OO/OO + W.B + 해석"
+        },
+        {
+          "id": "08be8532dc0c",
+          "text": "Unit 4 OO/OO + S.B + 발음, 강세"
+        },
+        {
+          "id": "2dd9319dfa29",
+          "text": "단어 외우기 + 오답 노트"
+        },
+        {
+          "id": "e6f12b67f498",
+          "text": "문법 : ~ 77쪽 오답 노트"
+        },
+        {
+          "id": "93bc181ea831",
+          "text": "문법 : ~ 81쪽 풀기"
+        },
+        {
+          "id": "976ed1957962",
+          "text": "Butterfly Effect 예시 긍정, 부정적인 것 써오기 3개"
+        }
+      ]
+    },
+    {
+      "postId": "4915",
+      "title": "Champ // Thursdsay, March 05, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4915?boardtype=L&menuid=41&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Champion",
+      "publishedAt": "2026.03.05. 16:48",
+      "postDate": "2026-03-05",
+      "items": [
+        {
+          "id": "8fd908c7c922",
+          "text": "Ten Eggs 목 O/O 토O/O"
+        },
+        {
+          "id": "cd1606f85412",
+          "text": "Red Hen 목 OO/OO 토 O/O"
+        },
+        {
+          "id": "08072a2912db",
+          "text": "S.T W.S 2쪽"
+        },
+        {
+          "id": "21e0ce5291c9",
+          "text": "I like to ~"
+        },
+        {
+          "id": "f5e13b9af5a2",
+          "text": "집 그림 그려오기"
+        },
+        {
+          "id": "7778036b839e",
+          "text": "Voca"
+        },
+        {
+          "id": "263d9bf27cd6",
+          "text": "R/L"
+        }
+      ]
+    },
+    {
+      "postId": "4898",
+      "title": "Champ // Tuesday, March 03, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4898?boardtype=L&menuid=41&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Champion",
+      "publishedAt": "2026.03.03. 14:39",
+      "postDate": "2026-03-03",
+      "items": [
+        {
+          "id": "f91b3b52ada3",
+          "text": "Ten Eggs 화OO/OO 수OO/OO"
+        },
+        {
+          "id": "7eba23d811b5",
+          "text": "공책 쓰기 - e 가 들어간 단어 쓰기"
+        },
+        {
+          "id": "2bdbc0e1f7b4",
+          "text": "카드 연습 OO"
+        },
+        {
+          "id": "a53586322ebd",
+          "text": "Voca"
+        },
+        {
+          "id": "38c143d8dfe1",
+          "text": "R/L"
+        }
+      ]
+    },
+    {
+      "postId": "4918",
+      "title": "Radiant // Thursday, March 5, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4918?boardtype=L&menuid=25&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Radiant",
+      "publishedAt": "2026.03.05. 19:04",
+      "postDate": "2026-03-05",
+      "items": [
+        {
+          "id": "9bb69332e6fb",
+          "text": "Unit 3 O/O + W.B + 해석"
+        },
+        {
+          "id": "c9fdfe309c56",
+          "text": "Unit 4 O/O + S.B + 발음, 강세"
+        },
+        {
+          "id": "1771a0b3af1c",
+          "text": "단어 오답 노트 + 단어 외우기"
+        },
+        {
+          "id": "4de5669a7e6e",
+          "text": "문법 : 오답 노트 ~80쪽"
+        },
+        {
+          "id": "c0e9ee3155cd",
+          "text": "문법 : ~ 85쪽"
+        },
+        {
+          "id": "bf1226dea57f",
+          "text": "Ivan - 20쪽 까지 읽기 녹음 + 단어 찾기"
+        },
+        {
+          "id": "705dd2254a5a",
+          "text": "Mutesi 영화 보기 (optional)"
+        }
+      ]
+    },
+    {
+      "postId": "4899",
+      "title": "Radiant // Tuesday, March 03, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/4899?boardtype=L&menuid=25&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Radiant",
+      "publishedAt": "2026.03.03. 14:42",
+      "postDate": "2026-03-03",
+      "items": [
+        {
+          "id": "6c364fbdbf0d",
+          "text": "첫 번 째 영상 보기 - 새롭게 알게 된 사실 적기 (영어로)"
+        },
+        {
+          "id": "187b4236db93",
+          "text": "Unit 2 OO/OO + W.B + 해석"
+        },
+        {
+          "id": "86e0eff7b2d4",
+          "text": "Unit 3 OO/OO + S.B + 발음, 강세"
+        },
+        {
+          "id": "644fe97cf3d2",
+          "text": "문법 : ~76쪽 오답 노트"
+        },
+        {
+          "id": "b1c82683bb65",
+          "text": "문법 : ~ 80쪽 풀기"
+        },
+        {
+          "id": "dd1c99eca8f2",
+          "text": "Ivan 책 가져오기"
+        },
+        {
+          "id": "c0ebdcf46918",
+          "text": "단어 오답 노트 + 단어 외우기 (단어 외우는 시간 갖기!!)"
+        }
+      ]
+    }
+  ]
+}
