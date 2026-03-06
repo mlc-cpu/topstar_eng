@@ -102,6 +102,37 @@ jobs:
             printf '%s' "$NAVER_STORAGE_STATE_JSON" > .state/naver-storage-state.json
           fi
 
+      - name: Resolve auth strategy
+        id: auth-strategy
+        if: steps.quiet-guard.outputs.skipped != 'true'
+        run: |
+          set -euo pipefail
+          has_id=false
+          has_pw=false
+          has_state=false
+
+          if [ -n "${NAVER_ID//[[:space:]]/}" ]; then
+            has_id=true
+          fi
+          if [ -n "${NAVER_PASSWORD//[[:space:]]/}" ]; then
+            has_pw=true
+          fi
+          if [ -s ".state/naver-storage-state.json" ]; then
+            has_state=true
+          fi
+
+          strategy="none"
+          if [ "$has_id" = true ] && [ "$has_pw" = true ]; then
+            # Prefer credential login on each run; stale storage state can block fresh auth.
+            rm -f .state/naver-storage-state.json
+            strategy="credentials"
+          elif [ "$has_state" = true ]; then
+            strategy="storage_state"
+          fi
+
+          echo "strategy=${strategy}" >> "$GITHUB_OUTPUT"
+          echo "::notice::naver auth strategy=${strategy}"
+
       - name: Randomized schedule delay
         if: steps.quiet-guard.outputs.skipped != 'true' && github.event_name == 'schedule'
         env:
@@ -138,6 +169,10 @@ jobs:
 
           if run_sync; then
             exit 0
+          fi
+
+          if [ "${{ steps.auth-strategy.outputs.strategy }}" = "none" ]; then
+            echo "::warning::No NAVER auth configured (NAVER_ID/NAVER_PASSWORD or NAVER_STORAGE_STATE_JSON)."
           fi
 
           echo "::warning::sync failed on first attempt, retrying once in 5s."
