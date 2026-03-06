@@ -141,6 +141,7 @@ npm run remote:sync
 자동수집을 최대한 안정적으로 유지하려면:
 - `NAVER_STORAGE_STATE_JSON`을 우선 유지 (캡차 통과 세션 기준으로 먼저 수집 시도)
 - `NAVER_ID` + `NAVER_PASSWORD`는 보조 fallback으로 함께 설정
+- 워크플로는 인증정보를 필요한 단계에만 주입하고, 실행 후 세션 파일을 즉시 삭제
 
 ### GitHub Variables(선택)
 
