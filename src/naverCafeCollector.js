@@ -114,6 +114,12 @@ async function ensureAuthenticatedSession(page) {
     return;
   }
 
+  // If storage state was restored, prefer that session first.
+  // This avoids forcing credential login on every run, which can fail due to 2FA/captcha.
+  if (existsSync(config.storageStateFile)) {
+    return;
+  }
+
   if (!config.naverId || !config.naverPassword) {
     return;
   }
