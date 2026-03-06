@@ -8,6 +8,8 @@ import { readJson } from "./utils.js";
 
 const root = path.resolve(config.outputDir);
 let refreshInFlight = null;
+const AUTO_SYNC_INTERVAL_MS = 60 * 60 * 1000;
+const AUTO_SYNC_INITIAL_DELAY_MS = 15 * 1000;
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -41,6 +43,59 @@ function writeJsonResponse(res, statusCode, payload) {
   res.end(JSON.stringify(payload));
 }
 
+function getErrorMessage(error) {
+  if (error && typeof error === "object" && typeof error.message === "string" && error.message.trim()) {
+    return error.message.trim();
+  }
+
+  return String(error || "unknown_error");
+}
+
+function startRefreshTask(options) {
+  refreshInFlight = runSync(options)
+    .catch((error) => {
+      const message = getErrorMessage(error);
+      console.error(`[sync] ${options.trigger || "unknown"} failed: ${message}`);
+      return {
+        status: "refresh_failed",
+        skipped: true,
+        reason: "error",
+        error: message,
+        trigger: options.trigger || null,
+        syncedAt: null,
+      };
+    })
+    .finally(() => {
+      refreshInFlight = null;
+    });
+
+  return refreshInFlight;
+}
+
+async function runScheduledRefreshTick() {
+  if (refreshInFlight) {
+    console.log("[sync] scheduled tick skipped (refresh in flight)");
+    return;
+  }
+
+  await startRefreshTask({
+    trigger: "scheduled",
+    force: false,
+    scheduled: true,
+  });
+}
+
+function startAutoRefreshLoop() {
+  const run = () => {
+    runScheduledRefreshTick().catch((error) => {
+      console.error(`[sync] scheduled tick failed: ${getErrorMessage(error)}`);
+    });
+  };
+
+  setTimeout(run, AUTO_SYNC_INITIAL_DELAY_MS);
+  setInterval(run, AUTO_SYNC_INTERVAL_MS);
+}
+
 async function handleRefreshRequest(url, res) {
   const force = url.searchParams.get("force") === "1";
 
@@ -54,12 +109,10 @@ async function handleRefreshRequest(url, res) {
     return;
   }
 
-  refreshInFlight = runSync({
+  refreshInFlight = startRefreshTask({
     trigger: "manual",
     force,
     scheduled: false,
-  }).finally(() => {
-    refreshInFlight = null;
   });
 
   const result = await refreshInFlight;
@@ -157,7 +210,12 @@ const server = http.createServer((req, res) => {
   });
 });
 
+startAutoRefreshLoop();
+
 server.listen(config.port, "0.0.0.0", () => {
   console.log(`[serve] http://localhost:${config.port}`);
   console.log(`[serve] serving from ${root}`);
+  console.log(
+    `[sync] auto refresh every ${Math.round(AUTO_SYNC_INTERVAL_MS / 60_000)}m (quiet hours ${config.quietHoursStart}:00-${config.quietHoursEnd}:00 ${config.timeZone})`
+  );
 });

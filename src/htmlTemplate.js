@@ -303,6 +303,7 @@ export function renderHomeworkHtml({ pageTitle }) {
       const DEFAULT_CLASS_KEY = "homework-default-class";
       const DEFAULT_CLASS = "Ace";
       const DEFAULT_REFRESH_COOLDOWN_SECONDS = 300;
+      const REFRESH_REQUEST_TIMEOUT_MS = 120000;
       const CLASS_ORDER = ["Ace", "Star", "Top", "Peak", "Champion", "Radiant"];
       const CLASS_SET = new Set(CLASS_ORDER);
       const CLASS_LABEL_MAP = {
@@ -545,22 +546,41 @@ export function renderHomeworkHtml({ pageTitle }) {
 
       async function requestRefreshFromServer() {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 12000);
+        const timeout = setTimeout(() => controller.abort(), REFRESH_REQUEST_TIMEOUT_MS);
 
         try {
-          const response = await fetch("./api/refresh", {
+          const response = await fetch("./api/refresh?force=1", {
             method: "POST",
             cache: "no-store",
             signal: controller.signal,
           });
           if (!response.ok) {
-            return null;
+            let errorMessage = "HTTP " + response.status;
+            const errorPayload = await response.json().catch(() => null);
+            if (errorPayload && typeof errorPayload.error === "string" && errorPayload.error.trim()) {
+              errorMessage = errorPayload.error.trim();
+            }
+            return {
+              status: "refresh_failed",
+              error: errorMessage,
+            };
           }
 
           const payload = await response.json().catch(() => null);
-          return payload && typeof payload === "object" ? payload : null;
-        } catch {
-          return null;
+          if (payload && typeof payload === "object") {
+            return payload;
+          }
+
+          return {
+            status: "refresh_failed",
+            error: "invalid_response",
+          };
+        } catch (error) {
+          const isTimeout = error && typeof error === "object" && error.name === "AbortError";
+          return {
+            status: "refresh_failed",
+            error: isTimeout ? "timeout" : "network_error",
+          };
         } finally {
           clearTimeout(timeout);
         }
@@ -738,6 +758,10 @@ export function renderHomeworkHtml({ pageTitle }) {
 
         if (refreshResult.status === "quiet_hours_skip") {
           return "야간 자동수집 제외 시간 · " + base;
+        }
+
+        if (refreshResult.status === "refresh_failed") {
+          return "업데이트 실패 · " + base;
         }
 
         return base;
