@@ -122,15 +122,23 @@ jobs:
           fi
 
           strategy="none"
+          has_credentials=false
           if [ "$has_id" = true ] && [ "$has_pw" = true ]; then
-            # Prefer credential login on each run; stale storage state can block fresh auth.
-            rm -f .state/naver-storage-state.json
-            strategy="credentials"
-          elif [ "$has_state" = true ]; then
-            strategy="storage_state"
+            has_credentials=true
+          fi
+
+          if [ "$has_state" = true ]; then
+            # Prefer captcha-passed storage state first to avoid frequent login challenges.
+            strategy="storage_state_first"
+          elif [ "$has_credentials" = true ]; then
+            strategy="credentials_only"
+          else
+            strategy="none"
           fi
 
           echo "strategy=${strategy}" >> "$GITHUB_OUTPUT"
+          echo "has_state=${has_state}" >> "$GITHUB_OUTPUT"
+          echo "has_credentials=${has_credentials}" >> "$GITHUB_OUTPUT"
           echo "::notice::naver auth strategy=${strategy}"
 
       - name: Randomized schedule delay
@@ -175,8 +183,15 @@ jobs:
             echo "::warning::No NAVER auth configured (NAVER_ID/NAVER_PASSWORD or NAVER_STORAGE_STATE_JSON)."
           fi
 
-          echo "::warning::sync failed on first attempt, retrying once in 5s."
-          sleep 5
+          if [ "${{ steps.auth-strategy.outputs.strategy }}" = "storage_state_first" ] && [ "${{ steps.auth-strategy.outputs.has_credentials }}" = "true" ]; then
+            echo "::warning::sync failed with storage state. Retrying once with credential-only mode."
+            rm -f .state/naver-storage-state.json
+            sleep 3
+          else
+            echo "::warning::sync failed on first attempt, retrying once in 5s."
+            sleep 5
+          fi
+
           if run_sync; then
             exit 0
           fi

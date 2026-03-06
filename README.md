@@ -139,8 +139,8 @@ npm run remote:sync
 - `NAVER_STORAGE_STATE_JSON` (선택, 세션 JSON 문자열)
 
 자동수집을 최대한 안정적으로 유지하려면:
-- `NAVER_ID` + `NAVER_PASSWORD`를 우선 설정 (워크플로에서 이 조합을 최우선 사용)
-- `NAVER_STORAGE_STATE_JSON`은 보조 수단으로 유지하고, 만료 시 재업로드
+- `NAVER_STORAGE_STATE_JSON`을 우선 유지 (캡차 통과 세션 기준으로 먼저 수집 시도)
+- `NAVER_ID` + `NAVER_PASSWORD`는 보조 fallback으로 함께 설정
 
 ### GitHub Variables(선택)
 
