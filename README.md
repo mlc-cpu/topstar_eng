@@ -149,7 +149,8 @@ npm run remote:sync
 세션 만료 자동 갱신(권장):
 - `GH_SECRET_UPDATE_TOKEN`을 설정하면, 워크플로가 실행 중 생성/갱신된 `.state/naver-storage-state.json`을
   `NAVER_STORAGE_STATE_JSON` Secret으로 자동 덮어씁니다.
-- 토큰은 해당 저장소에 대해 `Actions Secrets` 쓰기 권한이 있어야 합니다.
+- 워크플로는 먼저 기본 `github.token`으로 갱신을 시도합니다.
+- 권한 부족으로 실패하면 `GH_SECRET_UPDATE_TOKEN`(해당 저장소의 Actions Secret 쓰기 권한 포함)을 설정하면 됩니다.
 
 ### GitHub Variables(선택)
 

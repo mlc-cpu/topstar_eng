@@ -198,17 +198,12 @@ jobs:
       - name: Rotate NAVER storage-state secret
         if: steps.quiet-guard.outputs.skipped != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GH_SECRET_UPDATE_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_SECRET_UPDATE_TOKEN != '' && secrets.GH_SECRET_UPDATE_TOKEN || github.token }}
         run: |
           set -euo pipefail
 
           if [ ! -s ".state/naver-storage-state.json" ]; then
             echo "::notice::No storage state file generated in this run."
-            exit 0
-          fi
-
-          if [ -z "${GH_TOKEN:-}" ]; then
-            echo "::warning::GH_SECRET_UPDATE_TOKEN is missing. Skipping NAVER_STORAGE_STATE_JSON rotation."
             exit 0
           fi
 
@@ -218,7 +213,7 @@ jobs:
           if gh secret set NAVER_STORAGE_STATE_JSON --repo "$GITHUB_REPOSITORY" < .state/naver-storage-state.json; then
             echo "::notice::NAVER_STORAGE_STATE_JSON rotated successfully."
           else
-            echo "::warning::Failed to rotate NAVER_STORAGE_STATE_JSON."
+            echo "::warning::Failed to rotate NAVER_STORAGE_STATE_JSON (insufficient token permission). Set GH_SECRET_UPDATE_TOKEN to enable guaranteed rotation."
           fi
 
       - name: Remove transient auth files
