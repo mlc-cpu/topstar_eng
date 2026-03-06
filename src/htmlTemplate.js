@@ -131,6 +131,10 @@ export function renderHomeworkHtml({ pageTitle }) {
         color: #eef4ff;
       }
 
+      .class-row-break {
+        display: none;
+      }
+
       .list {
         margin-top: 12px;
         display: grid;
@@ -260,6 +264,18 @@ export function renderHomeworkHtml({ pageTitle }) {
         color: var(--danger);
       }
 
+      @media (max-width: 639px) {
+        .class-row-break {
+          display: block;
+          flex-basis: 100%;
+          width: 100%;
+          height: 0;
+          margin: 0;
+          padding: 0;
+          pointer-events: none;
+        }
+      }
+
       @media (min-width: 640px) {
         main {
           padding-top: 18px;
@@ -286,6 +302,7 @@ export function renderHomeworkHtml({ pageTitle }) {
       const STORAGE_PREFIX = "homework-check:";
       const DEFAULT_CLASS_KEY = "homework-default-class";
       const DEFAULT_CLASS = "Ace";
+      const DEFAULT_REFRESH_COOLDOWN_SECONDS = 300;
       const CLASS_ORDER = ["Ace", "Star", "Top", "Peak", "Champion", "Radiant"];
       const CLASS_SET = new Set(CLASS_ORDER);
       const CLASS_LABEL_MAP = {
@@ -423,10 +440,64 @@ export function renderHomeworkHtml({ pageTitle }) {
         return posts.filter((post) => extractClassName(post) === selectedClass);
       }
 
+      function resolveRefreshCooldownSeconds(data) {
+        const raw = Number.parseInt(String(data?.source?.refreshCooldownSeconds ?? ""), 10);
+        if (Number.isFinite(raw) && raw > 0) {
+          return raw;
+        }
+        return DEFAULT_REFRESH_COOLDOWN_SECONDS;
+      }
+
+      function shouldRefreshOnClassSelect(data) {
+        if (!data || typeof data !== "object") {
+          return true;
+        }
+
+        const parsed = new Date(data.generatedAt || "");
+        if (Number.isNaN(parsed.getTime())) {
+          return true;
+        }
+
+        const cooldownMs = resolveRefreshCooldownSeconds(data) * 1000;
+        return Date.now() - parsed.getTime() >= cooldownMs;
+      }
+
+      function getCooldownRemainingMinutes(data) {
+        if (!data || typeof data !== "object") {
+          return 0;
+        }
+
+        const parsed = new Date(data.generatedAt || "");
+        if (Number.isNaN(parsed.getTime())) {
+          return 0;
+        }
+
+        const cooldownMs = resolveRefreshCooldownSeconds(data) * 1000;
+        const elapsedMs = Math.max(0, Date.now() - parsed.getTime());
+        const remainingMs = Math.max(0, cooldownMs - elapsedMs);
+        return Math.ceil(remainingMs / 60_000);
+      }
+
       async function chooseDefaultClass(className) {
         setDefaultClass(className);
-        const refreshResult = await requestRefreshFromServer();
-        await render({ useCache: false, refreshResult });
+        if (shouldRefreshOnClassSelect(cachedData)) {
+          const statusEl = document.getElementById("status");
+          if (statusEl) {
+            statusEl.textContent = "업데이트 중";
+          }
+
+          const refreshResult = await requestRefreshFromServer();
+          await render({ useCache: false, refreshResult });
+          return;
+        }
+
+        await render({
+          useCache: Boolean(cachedData),
+          refreshResult: {
+            status: "cooldown_skip",
+            cooldownRemainingMinutes: getCooldownRemainingMinutes(cachedData),
+          },
+        });
       }
 
       function createClassOptionButton(option, defaultClass) {
@@ -443,6 +514,13 @@ export function renderHomeworkHtml({ pageTitle }) {
         return button;
       }
 
+      function createClassRowBreak() {
+        const lineBreak = document.createElement("span");
+        lineBreak.className = "class-row-break";
+        lineBreak.setAttribute("aria-hidden", "true");
+        return lineBreak;
+      }
+
       function renderClassOptions() {
         const classOptionsEl = document.getElementById("class-options");
         const defaultClass = getDefaultClass();
@@ -453,6 +531,9 @@ export function renderHomeworkHtml({ pageTitle }) {
         );
 
         for (const className of classSequence) {
+          if (className === "Champion") {
+            classOptionsEl.appendChild(createClassRowBreak());
+          }
           classOptionsEl.appendChild(
             createClassOptionButton(
               { label: getClassLabel(className), value: className },
@@ -627,7 +708,7 @@ export function renderHomeworkHtml({ pageTitle }) {
       }
 
       function buildStatusText(generatedAtIso, refreshResult) {
-        const base = "업데이트 " + formatElapsedText(generatedAtIso);
+        const base = formatElapsedText(generatedAtIso) + " 업데이트 완료";
         if (!refreshResult || typeof refreshResult !== "object") {
           return base;
         }
@@ -637,7 +718,26 @@ export function renderHomeworkHtml({ pageTitle }) {
         }
 
         if (refreshResult.status === "cooldown_skip") {
-          return "최근 5분 내 수집 데이터 · " + base;
+          let remainingMinutes = Number.parseInt(
+            String(refreshResult.cooldownRemainingMinutes ?? ""),
+            10
+          );
+
+          if (!Number.isFinite(remainingMinutes)) {
+            const remainingSeconds = Number.parseInt(
+              String(refreshResult.cooldownRemainingSeconds ?? ""),
+              10
+            );
+            if (Number.isFinite(remainingSeconds)) {
+              remainingMinutes = Math.ceil(Math.max(0, remainingSeconds) / 60);
+            }
+          }
+
+          if (Number.isFinite(remainingMinutes) && remainingMinutes > 0) {
+            return base + ", " + remainingMinutes + "분 후 업데이트 가능";
+          }
+
+          return base;
         }
 
         if (refreshResult.status === "quiet_hours_skip") {
