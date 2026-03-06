@@ -138,12 +138,18 @@ npm run remote:sync
 - `NAVER_ID` (선택)
 - `NAVER_PASSWORD` (선택)
 - `NAVER_STORAGE_STATE_JSON` (선택, 세션 JSON 문자열)
+- `GH_SECRET_UPDATE_TOKEN` (선택, 자동 세션 갱신용 PAT)
 
 자동수집을 최대한 안정적으로 유지하려면:
 - `NAVER_STORAGE_STATE_JSON`을 우선 유지 (HTTP API 본문 수집에 사용)
 - `NAVER_ID` + `NAVER_PASSWORD`는 보조 fallback으로 함께 설정
 - 워크플로는 인증정보를 필요한 단계에만 주입하고, 실행 후 세션 파일을 즉시 삭제
 - API 수집 실패가 반복되면 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON`을 갱신
+
+세션 만료 자동 갱신(권장):
+- `GH_SECRET_UPDATE_TOKEN`을 설정하면, 워크플로가 실행 중 생성/갱신된 `.state/naver-storage-state.json`을
+  `NAVER_STORAGE_STATE_JSON` Secret으로 자동 덮어씁니다.
+- 토큰은 해당 저장소에 대해 `Actions Secrets` 쓰기 권한이 있어야 합니다.
 
 ### GitHub Variables(선택)
 
