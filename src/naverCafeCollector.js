@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 
+import * as cheerio from "cheerio";
 import { chromium } from "playwright";
 
 import { config } from "./config.js";
@@ -8,6 +9,7 @@ import {
   extractClassNameFromTitle,
   extractPostId,
   normalizeText,
+  readJson,
   toAbsoluteNaverUrl,
   uniqueBy,
   writeJson,
@@ -32,6 +34,128 @@ const CLASS_MENU_FUZZY_ALIASES = [
   ["peak", "Peak"],
   ["top", "Top"],
 ];
+const NAVER_PC_USER_AGENT =
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
+
+function extractCafeIdFromBoardUrl(boardUrl) {
+  const match = String(boardUrl ?? "").match(/\/cafes\/(\d+)/i);
+  return match?.[1] || "";
+}
+
+function buildApiHeaders({ referer = "", cookie = "" } = {}) {
+  return {
+    accept: "application/json, text/plain, */*",
+    "x-cafe-product": "pc",
+    "user-agent": NAVER_PC_USER_AGENT,
+    ...(referer ? { referer } : {}),
+    ...(cookie ? { cookie } : {}),
+  };
+}
+
+function formatArticleWriteDate(writeDateTs) {
+  const timestamp = Number(writeDateTs);
+  if (!Number.isFinite(timestamp)) {
+    return "";
+  }
+
+  const date = new Date(timestamp);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString();
+}
+
+function buildArticleUrl(cafeId, menuId, postId) {
+  return `https://cafe.naver.com/f-e/cafes/${cafeId}/articles/${postId}?boardtype=L&menuid=${menuId}&referrerAllArticles=false`;
+}
+
+function extractBodyTextFromContentHtml(contentHtml) {
+  const html = String(contentHtml ?? "").trim();
+  if (!html) {
+    return "";
+  }
+
+  const normalizedHtml = html
+    .replace(/<br\s*\/?\s*>/gi, "\n")
+    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, "</$1>\n");
+  const $ = cheerio.load(normalizedHtml);
+  $("script,style,noscript").remove();
+
+  const root = $(".se-main-container").length > 0 ? $(".se-main-container") : $.root();
+  return normalizeText(root.text());
+}
+
+async function loadCookieHeaderFromStorageState() {
+  const storageState = await readJson(config.storageStateFile, null);
+  if (!storageState || typeof storageState !== "object") {
+    return "";
+  }
+
+  const nowSec = Date.now() / 1000;
+  const cookies = Array.isArray(storageState.cookies) ? storageState.cookies : [];
+  const validCookies = cookies.filter((cookie) => {
+    const expires = Number(cookie?.expires);
+    if (!Number.isFinite(expires) || expires === -1) {
+      return true;
+    }
+    return expires > nowSec;
+  });
+
+  return validCookies
+    .map((cookie) => {
+      const name = String(cookie?.name ?? "").trim();
+      const value = String(cookie?.value ?? "");
+      if (!name) {
+        return "";
+      }
+      return `${name}=${value}`;
+    })
+    .filter(Boolean)
+    .join("; ");
+}
+
+async function fetchJson(url, options = {}) {
+  const timeoutMs = Math.max(1, options.timeoutMs ?? 45_000);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      method: options.method || "GET",
+      headers: options.headers || {},
+      body: options.body,
+      signal: controller.signal,
+    });
+
+    const rawText = await response.text();
+    let payload = null;
+    if (rawText) {
+      try {
+        payload = JSON.parse(rawText);
+      } catch {
+        payload = null;
+      }
+    }
+
+    if (!response.ok) {
+      const messageFromBody =
+        payload?.message || payload?.error?.message || payload?.errorMessage || "";
+      const message =
+        messageFromBody ||
+        `HTTP ${response.status} ${response.statusText || ""}`.trim();
+      const error = new Error(message);
+      error.status = response.status;
+      throw error;
+    }
+
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Invalid JSON response");
+    }
+
+    return payload;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 async function waitForMainFrame(page) {
   for (let i = 0; i < 20; i += 1) {
@@ -480,6 +604,138 @@ async function discoverClassMenus(page, frame, fallbackUrl) {
   return singleFallbackMenu;
 }
 
+async function discoverClassMenusViaApi(cafeId) {
+  const menusUrl = `https://apis.naver.com/cafe-web/cafe-cafemain-api/v1.0/cafes/${cafeId}/menus`;
+  const payload = await fetchJson(menusUrl, {
+    headers: buildApiHeaders({ referer: config.boardUrl }),
+  });
+
+  const rawMenus = Array.isArray(payload?.result?.menus) ? payload.result.menus : [];
+  const discovered = new Map();
+
+  for (const menu of rawMenus) {
+    const className = detectClassFromMenuText(menu?.name);
+    if (!CLASS_MENU_SET.has(className) || discovered.has(className)) {
+      continue;
+    }
+
+    const menuId = String(menu?.menuId ?? "").trim();
+    if (!menuId) {
+      continue;
+    }
+
+    const url = buildMenuUrlFromBoardUrl(config.boardUrl, menuId);
+    discovered.set(className, {
+      className,
+      menuId,
+      url: ensureListViewUrl(url),
+    });
+  }
+
+  if (discovered.size < CLASS_MENU_NAMES.length) {
+    for (const className of CLASS_MENU_NAMES) {
+      if (discovered.has(className)) {
+        continue;
+      }
+
+      const fallbackMenuId = DEFAULT_CLASS_MENU_ID_MAP[className];
+      const fallbackUrl = buildMenuUrlFromBoardUrl(config.boardUrl, fallbackMenuId);
+      if (!fallbackMenuId || !fallbackUrl) {
+        continue;
+      }
+
+      discovered.set(className, {
+        className,
+        menuId: fallbackMenuId,
+        url: ensureListViewUrl(fallbackUrl),
+      });
+    }
+  }
+
+  const resolved = CLASS_MENU_NAMES
+    .filter((className) => discovered.has(className))
+    .map((className) => discovered.get(className));
+
+  if (resolved.length < 1) {
+    throw new Error("Failed to discover class menus from API");
+  }
+
+  console.log(`[collect] class menus(api): ${resolved.map((item) => item.className).join(", ")}`);
+  return resolved;
+}
+
+async function getPostLinksViaApi(cafeId, menu, options = {}) {
+  const limit = Math.max(1, options.limit ?? config.maxPosts);
+  const pageSize = Math.max(15, Math.min(100, limit));
+  const listUrl =
+    `https://apis.naver.com/cafe-web/cafe-boardlist-api/v1/cafes/${cafeId}/menus/${menu.menuId}/articles` +
+    `?page=1&pageSize=${pageSize}&sortBy=TIME&viewType=L`;
+
+  const payload = await fetchJson(listUrl, {
+    headers: buildApiHeaders({ referer: menu.url || config.boardUrl }),
+  });
+
+  const rawItems = Array.isArray(payload?.result?.articleList) ? payload.result.articleList : [];
+  const links = rawItems
+    .filter((entry) => entry?.type === "ARTICLE" && entry?.item)
+    .map((entry) => entry.item)
+    .map((item) => {
+      const postId = String(item?.articleId ?? "").trim();
+      return {
+        postId,
+        menuId: String(menu.menuId),
+        title: normalizeText(item?.subject || ""),
+        author: normalizeText(item?.writerInfo?.nickName || ""),
+        publishedAt: formatArticleWriteDate(item?.writeDateTimestamp),
+        url: postId ? buildArticleUrl(cafeId, menu.menuId, postId) : "",
+      };
+    })
+    .filter((item) => item.postId && item.url);
+
+  const deduped = uniqueBy(links, (item) => item.postId);
+  const prioritized = prioritizeHomeworkLikeLinks(deduped);
+  return prioritized.slice(0, limit);
+}
+
+async function getPostDetailViaApi(cafeId, post, cookieHeader) {
+  if (!cookieHeader) {
+    throw loginRequiredError();
+  }
+
+  const articleUrl =
+    `https://article.cafe.naver.com/gw/v4/cafes/${cafeId}/articles/${post.postId}` +
+    `?menuId=${encodeURIComponent(post.menuId || "")}&boardType=L&useCafeId=true&requestFrom=A`;
+
+  const payload = await fetchJson(articleUrl, {
+    headers: buildApiHeaders({
+      referer: post.url || config.boardUrl,
+      cookie: cookieHeader,
+    }),
+  });
+
+  const article = payload?.result?.article;
+  if (!article || typeof article !== "object") {
+    throw new Error(`Article payload missing for post ${post.postId}`);
+  }
+
+  const bodyText = extractBodyTextFromContentHtml(article.contentHtml);
+
+  return {
+    postId: post.postId,
+    url: post.url,
+    title: normalizeText(article.subject || post.title || ""),
+    bodyText,
+    publishedAt: normalizeText(
+      formatArticleWriteDate(article.writeDate) ||
+      post.publishedAt ||
+      ""
+    ),
+    author: normalizeText(article.writer?.nick || post.author || ""),
+    className: post.className || "",
+    menuId: post.menuId || "",
+  };
+}
+
 async function mapWithConcurrency(items, limit, mapper) {
   const concurrency = Math.max(1, Math.min(limit, items.length || 1));
   const results = new Array(items.length);
@@ -513,7 +769,95 @@ function countByClass(items) {
     .join(", ");
 }
 
-export async function collectHomeworkPosts() {
+async function collectHomeworkPostsViaApi() {
+  const cafeId = extractCafeIdFromBoardUrl(config.boardUrl);
+  if (!cafeId) {
+    throw new Error("Failed to parse cafeId from NAVER_CAFE_BOARD_URL");
+  }
+
+  const cookieHeader = await loadCookieHeaderFromStorageState();
+  if (config.requireLogin && !cookieHeader) {
+    throw loginRequiredError();
+  }
+
+  const classMenus = await discoverClassMenusViaApi(cafeId);
+  const menuPostScanLimit = Math.max(8, config.classPostLimit * 4);
+
+  const linksByClass = [];
+  for (const menu of classMenus) {
+    try {
+      const menuLinks = await getPostLinksViaApi(cafeId, menu, { limit: menuPostScanLimit });
+      for (const link of menuLinks) {
+        linksByClass.push({
+          ...link,
+          className: menu.className || "",
+          menuId: String(menu.menuId || link.menuId || ""),
+        });
+      }
+    } catch (error) {
+      console.error(`[collect] API list failed for ${menu.className}: ${error.message}`);
+    }
+  }
+
+  const classScopedLinks = uniqueBy(
+    linksByClass,
+    (item) => `${item.className || ""}:${item.postId}`
+  );
+  const uniqueLinks = uniqueBy(classScopedLinks, (item) => item.postId);
+  console.log(
+    `[collect] api class-scoped links=${classScopedLinks.length}, unique posts=${uniqueLinks.length}`
+  );
+  console.log(`[collect] api class link distribution ${countByClass(classScopedLinks)}`);
+
+  if (config.requireLogin && uniqueLinks.length < 1) {
+    throw loginRequiredError();
+  }
+
+  const detailedPosts = await mapWithConcurrency(
+    uniqueLinks,
+    config.detailConcurrency,
+    async (link) => {
+      try {
+        return await getPostDetailViaApi(cafeId, link, cookieHeader);
+      } catch (error) {
+        console.error(`[collect] API detail failed for post ${link.postId}: ${error.message}`);
+        return null;
+      }
+    }
+  );
+
+  const detailMap = new Map(
+    detailedPosts
+      .filter(Boolean)
+      .map((post) => [post.postId, post])
+  );
+
+  const posts = uniqueBy(
+    classScopedLinks
+      .map((link) => {
+        const detail = detailMap.get(link.postId);
+        if (!detail) {
+          return null;
+        }
+
+        return {
+          ...detail,
+          className: link.className || detail.className || "",
+        };
+      })
+      .filter(Boolean),
+    (item) => `${item.className || ""}:${item.postId}`
+  );
+
+  console.log(`[collect] api collected post distribution ${countByClass(posts)}`);
+  if (config.requireLogin && posts.length < 1) {
+    throw loginRequiredError();
+  }
+
+  return posts;
+}
+
+async function collectHomeworkPostsViaBrowser() {
   if (!config.boardUrl) {
     throw new Error("Missing required environment variable: NAVER_CAFE_BOARD_URL");
   }
@@ -645,5 +989,38 @@ export async function collectHomeworkPosts() {
   } finally {
     await context.close();
     await browser.close();
+  }
+}
+
+export async function collectHomeworkPosts() {
+  if (!config.boardUrl) {
+    throw new Error("Missing required environment variable: NAVER_CAFE_BOARD_URL");
+  }
+
+  let apiError = null;
+  try {
+    const apiPosts = await collectHomeworkPostsViaApi();
+    if (apiPosts.length > 0 || !config.requireLogin) {
+      console.log("[collect] collector path=http_api");
+      return apiPosts;
+    }
+  } catch (error) {
+    apiError = error;
+    console.warn(`[collect] http api collector failed: ${error.message}`);
+  }
+
+  try {
+    const browserPosts = await collectHomeworkPostsViaBrowser();
+    console.log("[collect] collector path=browser");
+    return browserPosts;
+  } catch (browserError) {
+    if (apiError) {
+      const merged = new Error(
+        `Both collectors failed. api=${apiError.message}; browser=${browserError.message}`
+      );
+      merged.cause = browserError;
+      throw merged;
+    }
+    throw browserError;
   }
 }

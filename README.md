@@ -8,6 +8,7 @@
 - 반별 최신 숙제 게시글 `2개`씩 노출 (`CLASS_POST_LIMIT`)
 - 체크 상태는 각 기기 `localStorage`에 저장
 - 정적 사이트라 GitHub Pages 배포 가능
+- 수집은 `HTTP API(cookie 세션)` 우선, 실패 시 `Playwright` 폴백
 - 반 버튼 클릭 시 필터만 변경하고, 데이터는 자동 갱신 주기(기본 5분)로 반영
 - 수집/렌더링은 `npm run sync` 한 번으로 생성
 - 앱 아이콘은 `assets/topstar-logo.png`를 사용
@@ -22,7 +23,7 @@
 ## 동작 구조
 
 1. `src/naverCafeCollector.js`
-- 네이버 카페 게시판/게시글 수집
+- 네이버 카페 게시판/게시글 수집 (`HTTP API` 우선, 실패 시 브라우저 수집)
 
 2. `src/checklistBuilder.js`
 - 본문을 체크리스트 항목으로 파싱 + 게시글 날짜(`postDate`) 추출
@@ -139,9 +140,10 @@ npm run remote:sync
 - `NAVER_STORAGE_STATE_JSON` (선택, 세션 JSON 문자열)
 
 자동수집을 최대한 안정적으로 유지하려면:
-- `NAVER_STORAGE_STATE_JSON`을 우선 유지 (캡차 통과 세션 기준으로 먼저 수집 시도)
+- `NAVER_STORAGE_STATE_JSON`을 우선 유지 (HTTP API 본문 수집에 사용)
 - `NAVER_ID` + `NAVER_PASSWORD`는 보조 fallback으로 함께 설정
 - 워크플로는 인증정보를 필요한 단계에만 주입하고, 실행 후 세션 파일을 즉시 삭제
+- API 수집 실패가 반복되면 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON`을 갱신
 
 ### GitHub Variables(선택)
 
