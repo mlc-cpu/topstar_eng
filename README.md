@@ -8,7 +8,7 @@
 - 반별 최신 숙제 게시글 `2개`씩 노출 (`CLASS_POST_LIMIT`)
 - 체크 상태는 각 기기 `localStorage`에 저장
 - 정적 사이트라 GitHub Pages 배포 가능
-- 기본 반 버튼 클릭 시 서버 수집 API(`/api/refresh`) 호출 후 즉시 화면 갱신
+- 반 버튼 클릭 시 필터만 변경하고, 데이터는 자동 갱신 주기(기본 5분)로 반영
 - 수집/렌더링은 `npm run sync` 한 번으로 생성
 - 앱 아이콘은 `assets/topstar-logo.png`를 사용
 
@@ -125,7 +125,7 @@ npm run remote:sync
 
 워크플로 파일: `.github/workflows/deploy-pages.yml`
 
-- 1시간 주기(00:00-06:00 KST 자동 수집 스킵) + 수동 실행 + `main` 푸시 시 배포
+- 5분 주기(00:00-06:00 KST 자동 수집 스킵) + 수동 실행 + `main` 푸시 시 배포
 - `public/` 폴더를 GitHub Pages로 게시
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정
 - Pages 주소: `https://mlc-cpu.github.io/topstar_eng/`

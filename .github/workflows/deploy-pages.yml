@@ -3,7 +3,7 @@ name: Build and Deploy Homework Page
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "*/5 * * * *"
   push:
     branches:
       - main

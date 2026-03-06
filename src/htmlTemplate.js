@@ -302,8 +302,6 @@ export function renderHomeworkHtml({ pageTitle }) {
       const STORAGE_PREFIX = "homework-check:";
       const DEFAULT_CLASS_KEY = "homework-default-class";
       const DEFAULT_CLASS = "Ace";
-      const DEFAULT_REFRESH_COOLDOWN_SECONDS = 300;
-      const REFRESH_REQUEST_TIMEOUT_MS = 120000;
       const CLASS_ORDER = ["Ace", "Star", "Top", "Peak", "Champion", "Radiant"];
       const CLASS_SET = new Set(CLASS_ORDER);
       const CLASS_LABEL_MAP = {
@@ -441,64 +439,9 @@ export function renderHomeworkHtml({ pageTitle }) {
         return posts.filter((post) => extractClassName(post) === selectedClass);
       }
 
-      function resolveRefreshCooldownSeconds(data) {
-        const raw = Number.parseInt(String(data?.source?.refreshCooldownSeconds ?? ""), 10);
-        if (Number.isFinite(raw) && raw > 0) {
-          return raw;
-        }
-        return DEFAULT_REFRESH_COOLDOWN_SECONDS;
-      }
-
-      function shouldRefreshOnClassSelect(data) {
-        if (!data || typeof data !== "object") {
-          return true;
-        }
-
-        const parsed = new Date(data.generatedAt || "");
-        if (Number.isNaN(parsed.getTime())) {
-          return true;
-        }
-
-        const cooldownMs = resolveRefreshCooldownSeconds(data) * 1000;
-        return Date.now() - parsed.getTime() >= cooldownMs;
-      }
-
-      function getCooldownRemainingMinutes(data) {
-        if (!data || typeof data !== "object") {
-          return 0;
-        }
-
-        const parsed = new Date(data.generatedAt || "");
-        if (Number.isNaN(parsed.getTime())) {
-          return 0;
-        }
-
-        const cooldownMs = resolveRefreshCooldownSeconds(data) * 1000;
-        const elapsedMs = Math.max(0, Date.now() - parsed.getTime());
-        const remainingMs = Math.max(0, cooldownMs - elapsedMs);
-        return Math.ceil(remainingMs / 60_000);
-      }
-
       async function chooseDefaultClass(className) {
         setDefaultClass(className);
-        if (shouldRefreshOnClassSelect(cachedData)) {
-          const statusEl = document.getElementById("status");
-          if (statusEl) {
-            statusEl.textContent = "업데이트 중";
-          }
-
-          const refreshResult = await requestRefreshFromServer();
-          await render({ useCache: false, refreshResult });
-          return;
-        }
-
-        await render({
-          useCache: Boolean(cachedData),
-          refreshResult: {
-            status: "cooldown_skip",
-            cooldownRemainingMinutes: getCooldownRemainingMinutes(cachedData),
-          },
-        });
+        await render({ useCache: false });
       }
 
       function createClassOptionButton(option, defaultClass) {
@@ -541,48 +484,6 @@ export function renderHomeworkHtml({ pageTitle }) {
               defaultClass
             )
           );
-        }
-      }
-
-      async function requestRefreshFromServer() {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), REFRESH_REQUEST_TIMEOUT_MS);
-
-        try {
-          const response = await fetch("./api/refresh?force=1", {
-            method: "POST",
-            cache: "no-store",
-            signal: controller.signal,
-          });
-          if (!response.ok) {
-            let errorMessage = "HTTP " + response.status;
-            const errorPayload = await response.json().catch(() => null);
-            if (errorPayload && typeof errorPayload.error === "string" && errorPayload.error.trim()) {
-              errorMessage = errorPayload.error.trim();
-            }
-            return {
-              status: "refresh_failed",
-              error: errorMessage,
-            };
-          }
-
-          const payload = await response.json().catch(() => null);
-          if (payload && typeof payload === "object") {
-            return payload;
-          }
-
-          return {
-            status: "refresh_failed",
-            error: "invalid_response",
-          };
-        } catch (error) {
-          const isTimeout = error && typeof error === "object" && error.name === "AbortError";
-          return {
-            status: "refresh_failed",
-            error: isTimeout ? "timeout" : "network_error",
-          };
-        } finally {
-          clearTimeout(timeout);
         }
       }
 
@@ -727,47 +628,11 @@ export function renderHomeworkHtml({ pageTitle }) {
         return parts.join(" ") + " 전";
       }
 
-      function buildStatusText(generatedAtIso, refreshResult) {
-        const base = formatElapsedText(generatedAtIso) + " 업데이트 완료";
-        if (!refreshResult || typeof refreshResult !== "object") {
-          return base;
-        }
-
-        if (refreshResult.status === "cooldown_skip") {
-          let remainingMinutes = Number.parseInt(
-            String(refreshResult.cooldownRemainingMinutes ?? ""),
-            10
-          );
-
-          if (!Number.isFinite(remainingMinutes)) {
-            const remainingSeconds = Number.parseInt(
-              String(refreshResult.cooldownRemainingSeconds ?? ""),
-              10
-            );
-            if (Number.isFinite(remainingSeconds)) {
-              remainingMinutes = Math.ceil(Math.max(0, remainingSeconds) / 60);
-            }
-          }
-
-          if (Number.isFinite(remainingMinutes) && remainingMinutes > 0) {
-            return base + ", " + remainingMinutes + "분 후 업데이트 가능";
-          }
-
-          return base;
-        }
-
-        if (refreshResult.status === "quiet_hours_skip") {
-          return "야간 자동수집 제외 시간 · " + base;
-        }
-
-        if (refreshResult.status === "refresh_failed") {
-          return "업데이트 실패 · " + base;
-        }
-
-        return base;
+      function buildStatusText(generatedAtIso) {
+        return formatElapsedText(generatedAtIso) + " 업데이트 완료";
       }
 
-      async function render({ useCache = false, refreshResult = null } = {}) {
+      async function render({ useCache = false } = {}) {
         const statusEl = document.getElementById("status");
         const contentEl = document.getElementById("content");
 
@@ -791,7 +656,7 @@ export function renderHomeworkHtml({ pageTitle }) {
           }
 
           const generatedAt = data.generatedAt || "";
-          statusEl.textContent = buildStatusText(generatedAt, refreshResult);
+          statusEl.textContent = buildStatusText(generatedAt);
         } catch (error) {
           knownClasses = [...CLASS_ORDER];
           renderClassOptions();
@@ -803,6 +668,11 @@ export function renderHomeworkHtml({ pageTitle }) {
           statusEl.textContent = "업데이트 실패";
         }
       }
+
+      const AUTO_RELOAD_INTERVAL_MS = 60_000;
+      setInterval(() => {
+        render({ useCache: false }).catch(() => undefined);
+      }, AUTO_RELOAD_INTERVAL_MS);
 
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
