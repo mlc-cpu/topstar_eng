@@ -60,6 +60,56 @@ function extractCafeIdFromBoardUrl(boardUrl) {
   return "";
 }
 
+function extractCafeIdFromStorageState(storageState) {
+  if (!storageState || typeof storageState !== "object") {
+    return "";
+  }
+
+  const cookies = Array.isArray(storageState.cookies) ? storageState.cookies : [];
+  for (const cookie of cookies) {
+    const pathText = String(cookie?.path ?? "");
+    const match = pathText.match(/\/cafes\/(\d+)/i);
+    if (match?.[1]) {
+      return match[1];
+    }
+  }
+
+  return "";
+}
+
+async function resolveCafeIdForCollection() {
+  const fromUrl = extractCafeIdFromBoardUrl(config.boardUrl);
+  if (fromUrl) {
+    return fromUrl;
+  }
+
+  const storageState = await readJson(config.storageStateFile, null);
+  const fromStorage = extractCafeIdFromStorageState(storageState);
+  if (fromStorage) {
+    return fromStorage;
+  }
+
+  try {
+    const response = await fetch(config.boardUrl, {
+      headers: {
+        "user-agent": NAVER_PC_USER_AGENT,
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    const html = await response.text();
+    const fromHtml =
+      extractCafeIdFromBoardUrl(html) ||
+      (html.match(/clubid=(\d+)/i)?.[1] || "");
+    if (fromHtml) {
+      return fromHtml;
+    }
+  } catch {
+    // Ignore and fail below.
+  }
+
+  return "";
+}
+
 function buildApiHeaders({ referer = "", cookie = "" } = {}) {
   return {
     accept: "application/json, text/plain, */*",
@@ -78,6 +128,14 @@ function formatArticleWriteDate(writeDateTs) {
 
   const date = new Date(timestamp);
   return Number.isNaN(date.getTime()) ? "" : date.toISOString();
+}
+
+function buildMenuUrl(cafeId, menuId) {
+  if (!cafeId || !menuId) {
+    return "";
+  }
+
+  return `https://cafe.naver.com/f-e/cafes/${cafeId}/menus/${menuId}?viewType=L`;
 }
 
 function buildArticleUrl(cafeId, menuId, postId) {
@@ -548,7 +606,7 @@ function buildMenuUrlFromBoardUrl(boardUrl, menuId) {
     return "";
   }
 
-  return `https://cafe.naver.com/f-e/cafes/${cafeId}/menus/${menuId}?viewType=L`;
+  return buildMenuUrl(cafeId, menuId);
 }
 
 function buildFallbackMenuMap(boardUrl) {
@@ -641,7 +699,7 @@ async function discoverClassMenusViaApi(cafeId) {
       continue;
     }
 
-    const url = buildMenuUrlFromBoardUrl(config.boardUrl, menuId);
+    const url = buildMenuUrl(cafeId, menuId);
     discovered.set(className, {
       className,
       menuId,
@@ -656,7 +714,7 @@ async function discoverClassMenusViaApi(cafeId) {
       }
 
       const fallbackMenuId = DEFAULT_CLASS_MENU_ID_MAP[className];
-      const fallbackUrl = buildMenuUrlFromBoardUrl(config.boardUrl, fallbackMenuId);
+      const fallbackUrl = buildMenuUrl(cafeId, fallbackMenuId);
       if (!fallbackMenuId || !fallbackUrl) {
         continue;
       }
@@ -787,9 +845,9 @@ function countByClass(items) {
 }
 
 async function collectHomeworkPostsViaApi() {
-  const cafeId = extractCafeIdFromBoardUrl(config.boardUrl);
+  const cafeId = await resolveCafeIdForCollection();
   if (!cafeId) {
-    throw new Error("Failed to parse cafeId from NAVER_CAFE_BOARD_URL");
+    throw new Error("Failed to resolve cafeId from board URL or storage state");
   }
 
   const cookieHeader = await loadCookieHeaderFromStorageState();
