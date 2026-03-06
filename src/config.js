@@ -26,7 +26,7 @@ export const config = {
   detailConcurrency: Math.min(8, Math.max(1, toInt(process.env.DETAIL_CONCURRENCY, 4))),
   classPostLimit: Math.max(1, toInt(process.env.CLASS_POST_LIMIT, 2)),
   homeworkAuthor: process.env.HOMEWORK_AUTHOR?.trim() || "그래그래그레이스",
-  refreshCooldownSeconds: Math.max(0, toInt(process.env.REFRESH_COOLDOWN_SECONDS, 300)),
+  refreshCooldownSeconds: Math.max(0, toInt(process.env.REFRESH_COOLDOWN_SECONDS, 600)),
   quietHoursStart: Math.max(0, Math.min(23, toInt(process.env.QUIET_HOURS_START, 0))),
   quietHoursEnd: Math.max(0, Math.min(24, toInt(process.env.QUIET_HOURS_END, 6))),
   port: toInt(process.env.PORT, 4173),

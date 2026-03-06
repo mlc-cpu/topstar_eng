@@ -587,32 +587,24 @@ export function renderHomeworkHtml({ pageTitle }) {
         contentEl.appendChild(empty);
       }
 
-      function formatElapsedText(generatedAtIso) {
+      function formatRemainingText(generatedAtIso, refreshCooldownSeconds) {
         const parsed = new Date(generatedAtIso);
         if (Number.isNaN(parsed.getTime())) {
-          return "0분 전";
+          return "0분 후";
         }
 
-        const diffMs = Date.now() - parsed.getTime();
-        if (diffMs <= 0) {
-          return "0분 전";
+        const cooldownSeconds = Math.max(0, Number(refreshCooldownSeconds) || 0);
+        const nextRefreshAt = parsed.getTime() + (cooldownSeconds * 1000);
+        const remainingMs = Math.max(0, nextRefreshAt - Date.now());
+        const totalMinutes = Math.ceil(remainingMs / 60_000);
+
+        if (totalMinutes < 1) {
+          return "0분 후";
         }
 
-        const now = new Date();
-        const sameHour =
-          now.getFullYear() === parsed.getFullYear() &&
-          now.getMonth() === parsed.getMonth() &&
-          now.getDate() === parsed.getDate() &&
-          now.getHours() === parsed.getHours();
-
-        const totalMinutes = Math.floor(diffMs / 60_000);
         const days = Math.floor(totalMinutes / 1440);
         const hours = Math.floor((totalMinutes % 1440) / 60);
         const minutes = totalMinutes % 60;
-
-        if (sameHour) {
-          return minutes + "분 전";
-        }
 
         const parts = [];
         if (days > 0) {
@@ -625,11 +617,13 @@ export function renderHomeworkHtml({ pageTitle }) {
           parts.push(minutes + "분");
         }
 
-        return parts.join(" ") + " 전";
+        return parts.join(" ") + " 후";
       }
 
-      function buildStatusText(generatedAtIso) {
-        return formatElapsedText(generatedAtIso) + " 업데이트 완료";
+      function buildStatusText(data) {
+        const generatedAt = data?.generatedAt || "";
+        const refreshCooldownSeconds = data?.source?.refreshCooldownSeconds || 0;
+        return formatRemainingText(generatedAt, refreshCooldownSeconds) + " 업데이트 예정";
       }
 
       async function render({ useCache = false } = {}) {
@@ -655,8 +649,7 @@ export function renderHomeworkHtml({ pageTitle }) {
             }
           }
 
-          const generatedAt = data.generatedAt || "";
-          statusEl.textContent = buildStatusText(generatedAt);
+          statusEl.textContent = buildStatusText(data);
         } catch (error) {
           knownClasses = [...CLASS_ORDER];
           renderClassOptions();

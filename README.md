@@ -9,7 +9,7 @@
 - 체크 상태는 각 기기 `localStorage`에 저장
 - 정적 사이트라 GitHub Pages 배포 가능
 - 수집은 `HTTP API(cookie 세션)` 우선, 실패 시 `Playwright` 폴백
-- 반 버튼 클릭 시 필터만 변경하고, 데이터는 자동 갱신 주기(기본 5분)로 반영
+- 반 버튼 클릭 시 필터만 변경하고, 데이터는 자동 갱신 주기(기본 10분)로 반영
 - 수집/렌더링은 `npm run sync` 한 번으로 생성
 - 앱 아이콘은 `assets/topstar-logo.png`를 사용
 
@@ -57,7 +57,7 @@ cp .env.example .env
 - `CLASS_POST_LIMIT=2`
 - `MAX_POSTS=80`
 - `DETAIL_CONCURRENCY=4`
-- `REFRESH_COOLDOWN_SECONDS=300`
+- `REFRESH_COOLDOWN_SECONDS=600`
 - `QUIET_HOURS_START=0`
 - `QUIET_HOURS_END=6`
 - `TIME_ZONE=Asia/Seoul`
@@ -126,7 +126,7 @@ npm run remote:sync
 
 워크플로 파일: `.github/workflows/deploy-pages.yml`
 
-- 5분 주기(00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 수동 실행 + `main` 푸시 시 배포
+- 10분 주기(00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 수동 실행 + `main` 푸시 시 배포
 - `public/` 폴더를 GitHub Pages로 게시
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정
 - Pages 주소: `https://mlc-cpu.github.io/topstar_eng/`
@@ -159,7 +159,7 @@ npm run remote:sync
 - `TIME_ZONE` (기본 `Asia/Seoul`)
 - `MAX_POSTS`
 - `DETAIL_CONCURRENCY` (기본 `4`)
-- `REFRESH_COOLDOWN_SECONDS` (기본 `300`)
+- `REFRESH_COOLDOWN_SECONDS` (기본 `600`)
 - `QUIET_HOURS_START` (기본 `0`)
 - `QUIET_HOURS_END` (기본 `6`)
 - `SCHEDULE_JITTER_MAX_SECONDS` (기본 `240`, 최대 `240`)
