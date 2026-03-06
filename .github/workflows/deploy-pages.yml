@@ -3,7 +3,7 @@ name: Build and Deploy Homework Page
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "*/5 * * * *"
   push:
     branches:
       - main
@@ -101,6 +101,27 @@ jobs:
             mkdir -p .state
             printf '%s' "$NAVER_STORAGE_STATE_JSON" > .state/naver-storage-state.json
           fi
+
+      - name: Randomized schedule delay
+        if: steps.quiet-guard.outputs.skipped != 'true' && github.event_name == 'schedule'
+        env:
+          SCHEDULE_JITTER_MAX_SECONDS: ${{ vars.SCHEDULE_JITTER_MAX_SECONDS || '240' }}
+        run: |
+          set -euo pipefail
+          max="${SCHEDULE_JITTER_MAX_SECONDS:-240}"
+          if ! [[ "$max" =~ ^[0-9]+$ ]]; then
+            max=240
+          fi
+          if [ "$max" -lt 0 ]; then
+            max=0
+          fi
+          if [ "$max" -gt 240 ]; then
+            max=240
+          fi
+
+          delay=$(( RANDOM % (max + 1) ))
+          echo "Applying randomized schedule delay: ${delay}s"
+          sleep "$delay"
 
       - name: Build static page
         if: steps.quiet-guard.outputs.skipped != 'true'
