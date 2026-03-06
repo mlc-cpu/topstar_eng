@@ -105,11 +105,33 @@ jobs:
       - name: Build static page
         if: steps.quiet-guard.outputs.skipped != 'true'
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            npm run sync -- --scheduled
-          else
-            npm run sync
+          set -euo pipefail
+
+          run_sync() {
+            if [ "${{ github.event_name }}" = "schedule" ]; then
+              npm run sync -- --scheduled
+            else
+              npm run sync
+            fi
+          }
+
+          if run_sync; then
+            exit 0
           fi
+
+          echo "::warning::sync failed on first attempt, retrying once in 5s."
+          sleep 5
+          if run_sync; then
+            exit 0
+          fi
+
+          echo "::warning::sync failed again. Falling back to previously deployed Pages files."
+          mkdir -p public
+          base_url="${PAGES_URL%/}"
+          for file in homework.json index.html manifest.webmanifest sw.js icon.png icon.svg short-url.txt; do
+            curl -fsSL "${base_url}/${file}" -o "public/${file}"
+          done
+          : > public/.nojekyll
 
       - name: Upload Pages artifact
         if: steps.quiet-guard.outputs.skipped != 'true'
