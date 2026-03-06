@@ -38,8 +38,26 @@ const NAVER_PC_USER_AGENT =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
 
 function extractCafeIdFromBoardUrl(boardUrl) {
-  const match = String(boardUrl ?? "").match(/\/cafes\/(\d+)/i);
-  return match?.[1] || "";
+  const raw = String(boardUrl ?? "");
+  if (!raw) {
+    return "";
+  }
+
+  const patterns = [
+    /\/cafes\/(\d+)/i,
+    /[?&]clubid=(\d+)/i,
+    /[?&]search\.clubid=(\d+)/i,
+    /[?&]cafeid=(\d+)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = raw.match(pattern);
+    if (match?.[1]) {
+      return match[1];
+    }
+  }
+
+  return "";
 }
 
 function buildApiHeaders({ referer = "", cookie = "" } = {}) {
@@ -525,12 +543,11 @@ function buildMenuUrlFromBoardUrl(boardUrl, menuId) {
     return "";
   }
 
-  const match = raw.match(/\/cafes\/(\d+)\/menus\/\d+/i);
-  if (!match?.[1]) {
+  const cafeId = extractCafeIdFromBoardUrl(raw);
+  if (!cafeId) {
     return "";
   }
 
-  const cafeId = match[1];
   return `https://cafe.naver.com/f-e/cafes/${cafeId}/menus/${menuId}?viewType=L`;
 }
 
