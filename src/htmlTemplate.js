@@ -669,12 +669,12 @@ export function renderHomeworkHtml({ pageTitle }) {
       function formatElapsedText(generatedAtIso) {
         const parsed = new Date(generatedAtIso);
         if (Number.isNaN(parsed.getTime())) {
-          return "방금 전";
+          return "0분 전";
         }
 
         const diffMs = Date.now() - parsed.getTime();
-        if (diffMs <= 0 || diffMs < 60_000) {
-          return "방금 전";
+        if (diffMs <= 0) {
+          return "0분 전";
         }
 
         const now = new Date();
@@ -711,10 +711,6 @@ export function renderHomeworkHtml({ pageTitle }) {
         const base = formatElapsedText(generatedAtIso) + " 업데이트 완료";
         if (!refreshResult || typeof refreshResult !== "object") {
           return base;
-        }
-
-        if (refreshResult.status === "refreshed") {
-          return "새 수집 완료 · " + base;
         }
 
         if (refreshResult.status === "cooldown_skip") {
