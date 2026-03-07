@@ -607,6 +607,32 @@ export function renderHomeworkHtml({ pageTitle }) {
         return parts.join(" ");
       }
 
+      function formatElapsedLabel(generatedAtIso) {
+        const parsed = new Date(generatedAtIso);
+        if (Number.isNaN(parsed.getTime())) {
+          return "0분";
+        }
+
+        const elapsedMs = Math.max(0, Date.now() - parsed.getTime());
+        const totalMinutes = Math.floor(elapsedMs / 60_000);
+        const days = Math.floor(totalMinutes / 1440);
+        const hours = Math.floor((totalMinutes % 1440) / 60);
+        const minutes = totalMinutes % 60;
+        const parts = [];
+
+        if (days > 0) {
+          parts.push(days + "일");
+        }
+        if (hours > 0) {
+          parts.push(hours + "시간");
+        }
+        if (minutes > 0 || parts.length < 1) {
+          parts.push(minutes + "분");
+        }
+
+        return parts.join(" ");
+      }
+
       function buildStatusText(data) {
         const generatedAt = data?.generatedAt || "";
         const refreshCooldownSeconds = data?.source?.refreshCooldownSeconds || 0;
@@ -619,10 +645,10 @@ export function renderHomeworkHtml({ pageTitle }) {
         const cooldownSeconds = Math.max(0, Number(refreshCooldownSeconds) || 0);
         const nextRefreshAt = parsed.getTime() + (cooldownSeconds * 1000);
         if (Date.now() >= nextRefreshAt) {
-          return "업데이트 대기 중";
+          return "마지막 업데이트 " + formatElapsedLabel(generatedAt) + " 전, 자동 업데이트 대기 중";
         }
 
-        return "약 " + formatCooldownLabel(refreshCooldownSeconds) + " 주기 자동 업데이트";
+        return "마지막 업데이트 " + formatElapsedLabel(generatedAt) + " 전, 약 " + formatCooldownLabel(refreshCooldownSeconds) + " 주기 자동 업데이트";
       }
 
       async function render({ useCache = false } = {}) {
