@@ -623,6 +623,18 @@ export function renderHomeworkHtml({ pageTitle }) {
       function buildStatusText(data) {
         const generatedAt = data?.generatedAt || "";
         const refreshCooldownSeconds = data?.source?.refreshCooldownSeconds || 0;
+        const parsed = new Date(generatedAt);
+
+        if (Number.isNaN(parsed.getTime())) {
+          return "업데이트 예정";
+        }
+
+        const cooldownSeconds = Math.max(0, Number(refreshCooldownSeconds) || 0);
+        const nextRefreshAt = parsed.getTime() + (cooldownSeconds * 1000);
+        if (Date.now() >= nextRefreshAt) {
+          return "업데이트 대기 중";
+        }
+
         return formatRemainingText(generatedAt, refreshCooldownSeconds) + " 업데이트 예정";
       }
 
