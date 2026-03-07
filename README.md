@@ -126,7 +126,7 @@ npm run remote:sync
 
 워크플로 파일: `.github/workflows/deploy-pages.yml`
 
-- 정각 혼잡을 피한 10분 주기(`07,17,27,37,47,57`분 실행, 00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 수동 실행 + `main` 푸시 시 배포
+- 5분 간격 체크(`02,07,12,17,22,27,32,37,42,47,52,57`분 실행, 00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 실제 수집은 10분 쿨다운 이후에만 수행 + 수동 실행 + `main` 푸시 시 배포
 - `public/` 폴더를 GitHub Pages로 게시
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정
 - Pages 주소: `https://mlc-cpu.github.io/topstar_eng/`
