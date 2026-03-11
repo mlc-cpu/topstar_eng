@@ -170,3 +170,19 @@ npm run remote:sync
 - 네이버 보안정책(2FA/캡차)로 GitHub-hosted runner 로그인 자동화가 실패할 수 있습니다.
 - 이 경우 로컬/자체 러너에서 `npm run sync` 후 Pages 배포하는 방식이 안정적입니다.
 - 아이디/비번은 저장소에 커밋하지 않습니다.
+
+## 이어서 작업할 때
+
+- 이 저장소는 현재 Git 커밋, GitHub Actions 워크플로, GitHub Secrets 기준으로 이어서 작업할 수 있게 정리되어 있습니다.
+- Codex에서 이 폴더만 다시 열어도 대부분의 운영 상태를 복원할 수 있습니다.
+- 체크 상태는 서버가 아니라 각 기기 브라우저의 `localStorage`에 저장되므로 기기끼리 공유되지 않습니다.
+
+재개할 때 먼저 확인할 것:
+- `git status -sb`
+- `gh run list --workflow 'Build and Deploy Homework Page' --repo mlc-cpu/topstar_eng --limit 10`
+- `curl -sSL 'https://mlc-cpu.github.io/topstar_eng/homework.json' | jq '{generatedAt, refreshCooldownSeconds: .source.refreshCooldownSeconds, postCount: (.posts|length)}'`
+
+현재 운영 기준:
+- GitHub Actions는 5분 간격으로 상태를 체크하고, 실제 수집은 10분 쿨다운이 지난 경우에만 수행합니다.
+- 세션은 `NAVER_STORAGE_STATE_JSON`으로 유지하고, `GH_SECRET_UPDATE_TOKEN`이 있으면 워크플로가 세션 Secret을 자동 갱신합니다.
+- UI 상태 문구는 마지막 업데이트 경과 시간과 자동 업데이트 대기 상태를 함께 표시합니다.
