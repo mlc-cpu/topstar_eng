@@ -22,6 +22,9 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -215,13 +218,53 @@ jobs:
             exit 0
           fi
 
-          echo "::warning::sync failed again. Falling back to previously deployed Pages files."
+          echo "::warning::sync failed again. Restoring fallback static files."
           mkdir -p public
-          base_url="${PAGES_URL%/}"
-          for file in homework.json index.html manifest.webmanifest sw.js icon.png icon.svg short-url.txt; do
+
+          restore_from_pages() {
+            local file="$1"
+            local base_url="${PAGES_URL%/}"
             curl -fsSL "${base_url}/${file}" -o "public/${file}"
+          }
+
+          restore_from_repo() {
+            local file="$1"
+            local source_file="docs/${file}"
+            if [ ! -f "$source_file" ]; then
+              return 1
+            fi
+
+            cp "$source_file" "public/${file}"
+          }
+
+          restore_file() {
+            local file="$1"
+            if restore_from_pages "$file"; then
+              echo "::notice::Restored ${file} from deployed Pages."
+              return 0
+            fi
+
+            if restore_from_repo "$file"; then
+              echo "::warning::Pages restore failed for ${file}; used repository snapshot docs/${file}."
+              return 0
+            fi
+
+            echo "::error::Failed to restore ${file} from both Pages and docs/."
+            return 1
+          }
+
+          restore_failed=0
+          for file in homework.json index.html manifest.webmanifest sw.js icon.png icon.svg short-url.txt; do
+            if ! restore_file "$file"; then
+              restore_failed=1
+            fi
           done
           : > public/.nojekyll
+
+          if [ "$restore_failed" -ne 0 ] || [ ! -s public/homework.json ] || [ ! -s public/index.html ]; then
+            echo "::error::Fallback static site restore was incomplete."
+            exit 1
+          fi
 
       - name: Rotate NAVER storage-state secret
         if: steps.schedule-guard.outputs.skipped != 'true'
