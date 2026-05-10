@@ -5,7 +5,7 @@ orchestrator:
   id: homework-orchestrator
   objective: >-
     Naver Cafe 게시판의 최신 가정통신문(숙제)을 수집하고,
-    체크리스트 JSON/HTML을 생성해 태블릿에서 자동으로 갱신되도록 운영한다.
+    체크리스트 JSON/HTML을 생성해 GitHub Actions와 Pages로 자동 갱신되도록 운영한다.
   sequence:
     - cafe-collector-agent
     - homework-parser-agent
@@ -47,12 +47,12 @@ subagents:
       - webapp-testing (global)
 
   - id: schedule-ops-agent
-    responsibility: 주기 실행, 장애 확인, 상태 파일 관리
+    responsibility: GitHub Actions 주기 실행, 장애 확인, Pages 배포 상태 관리
     inputs:
-      - sync script
-      - state file
+      - .github/workflows/deploy-pages.yml
+      - GitHub Secrets/Variables
     outputs:
-      - scheduled updates
-      - run-state.json
+      - GitHub Pages deployment
+      - public/run-state.json
     skills:
-      - cron (skills.sh)
+      - GitHub Actions

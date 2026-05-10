@@ -210,12 +210,18 @@ const server = http.createServer((req, res) => {
   });
 });
 
-startAutoRefreshLoop();
+if (config.localAutoSync) {
+  startAutoRefreshLoop();
+}
 
 server.listen(config.port, "0.0.0.0", () => {
   console.log(`[serve] http://localhost:${config.port}`);
   console.log(`[serve] serving from ${root}`);
-  console.log(
-    `[sync] auto refresh every ${Math.round(AUTO_SYNC_INTERVAL_MS / 60_000)}m (quiet hours ${config.quietHoursStart}:00-${config.quietHoursEnd}:00 ${config.timeZone})`
-  );
+  if (config.localAutoSync) {
+    console.log(
+      `[sync] local auto refresh every ${Math.round(AUTO_SYNC_INTERVAL_MS / 60_000)}m (quiet hours ${config.quietHoursStart}:00-${config.quietHoursEnd}:00 ${config.timeZone})`
+    );
+  } else {
+    console.log("[sync] local auto refresh disabled; scheduled sync is managed by GitHub Actions");
+  }
 });

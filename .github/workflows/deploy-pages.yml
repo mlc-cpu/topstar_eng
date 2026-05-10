@@ -10,7 +10,6 @@ on:
     paths:
       - "src/**"
       - "assets/**"
-      - "scripts/**"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/deploy-pages.yml"
@@ -182,6 +181,7 @@ jobs:
           sleep "$delay"
 
       - name: Build static page
+        id: build-static
         if: steps.schedule-guard.outputs.skipped != 'true'
         env:
           NAVER_ID: ${{ secrets.NAVER_ID }}
@@ -198,6 +198,7 @@ jobs:
           }
 
           if run_sync; then
+            echo "sync_succeeded=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -215,9 +216,11 @@ jobs:
           fi
 
           if run_sync; then
+            echo "sync_succeeded=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
+          echo "sync_succeeded=false" >> "$GITHUB_OUTPUT"
           echo "::warning::sync failed again. Restoring fallback static files."
           mkdir -p public
 
@@ -267,7 +270,7 @@ jobs:
           fi
 
       - name: Rotate NAVER storage-state secret
-        if: steps.schedule-guard.outputs.skipped != 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.build-static.outputs.sync_succeeded == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_SECRET_UPDATE_TOKEN != '' && secrets.GH_SECRET_UPDATE_TOKEN || github.token }}
         run: |

@@ -10,10 +10,7 @@
     "start": "npm run sync && npm run serve",
     "install-browser": "npx playwright install chromium",
     "login": "node src/login.js",
-    "build": "npm run sync",
-    "remote:setup": "./scripts/remote-setup-via-ssh.sh",
-    "remote:sync": "./scripts/remote-run-sync.sh",
-    "remote:status": "./scripts/remote-status.sh"
+    "build": "npm run sync"
   },
   "keywords": [],
   "author": "",

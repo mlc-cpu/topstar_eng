@@ -6,6 +6,6 @@
 - 수집: `cafe-collector-agent`
 - 파싱: `homework-parser-agent`
 - 퍼블리시: `html-publisher-agent`
-- 운영: `schedule-ops-agent`
+- 운영: `schedule-ops-agent` (GitHub Actions + Pages)
 
 상세 매핑은 `system-topology.yaml`을 기준으로 유지합니다.

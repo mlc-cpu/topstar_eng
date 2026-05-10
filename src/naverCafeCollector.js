@@ -309,6 +309,27 @@ async function loginIfNeeded(page) {
   }
 }
 
+function hasCredentialLoginConfig() {
+  return Boolean(config.naverId && config.naverPassword);
+}
+
+async function loginWithCredentials(page, reason = "login_required") {
+  if (!hasCredentialLoginConfig()) {
+    throw loginRequiredError();
+  }
+
+  console.warn(`[collect] ${reason}; attempting credential login`);
+  const loginEntryUrl =
+    `https://nid.naver.com/nidlogin.login?mode=form&url=${encodeURIComponent(config.boardUrl)}`;
+
+  await page.goto(loginEntryUrl, {
+    waitUntil: "domcontentloaded",
+    timeout: 45_000,
+  });
+  await page.waitForTimeout(800);
+  await loginIfNeeded(page);
+}
+
 async function ensureAuthenticatedSession(page) {
   if (!config.requireLogin) {
     return;
@@ -320,19 +341,11 @@ async function ensureAuthenticatedSession(page) {
     return;
   }
 
-  if (!config.naverId || !config.naverPassword) {
+  if (!hasCredentialLoginConfig()) {
     return;
   }
 
-  const loginEntryUrl =
-    `https://nid.naver.com/nidlogin.login?mode=form&url=${encodeURIComponent(config.boardUrl)}`;
-
-  await page.goto(loginEntryUrl, {
-    waitUntil: "domcontentloaded",
-    timeout: 45_000,
-  });
-  await page.waitForTimeout(800);
-  await loginIfNeeded(page);
+  await loginWithCredentials(page, "no_storage_state");
 }
 
 async function pickFirstText(frame, selectors, options = {}) {
@@ -956,7 +969,11 @@ async function collectHomeworkPostsViaBrowser() {
     });
 
     if (config.requireLogin && (await pageLooksLikeLoginGate(page))) {
-      throw loginRequiredError();
+      await loginWithCredentials(page, "storage_state_expired_or_login_gate");
+      await page.goto(config.boardUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 45_000,
+      });
     }
 
     await loginIfNeeded(page);
@@ -967,7 +984,11 @@ async function collectHomeworkPostsViaBrowser() {
     });
 
     if (config.requireLogin && (await pageLooksLikeLoginGate(page))) {
-      throw loginRequiredError();
+      await loginWithCredentials(page, "login_gate_after_navigation");
+      await page.goto(config.boardUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 45_000,
+      });
     }
 
     const frame = await waitForMainFrame(page);
@@ -986,7 +1007,11 @@ async function collectHomeworkPostsViaBrowser() {
       });
 
       if (config.requireLogin && (await pageLooksLikeLoginGate(page))) {
-        throw loginRequiredError();
+        await loginWithCredentials(page, `login_gate_for_${menu.className || "class_menu"}`);
+        await page.goto(menu.url, {
+          waitUntil: "domcontentloaded",
+          timeout: 45_000,
+        });
       }
 
       const menuFrame = await waitForMainFrame(page);

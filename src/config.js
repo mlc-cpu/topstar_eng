@@ -30,6 +30,7 @@ export const config = {
   quietHoursStart: Math.max(0, Math.min(23, toInt(process.env.QUIET_HOURS_START, 0))),
   quietHoursEnd: Math.max(0, Math.min(24, toInt(process.env.QUIET_HOURS_END, 6))),
   port: toInt(process.env.PORT, 4173),
+  localAutoSync: toBool(process.env.LOCAL_AUTO_SYNC, false),
   timeZone: process.env.TIME_ZONE?.trim() || "Asia/Seoul",
   pageTitle: process.env.PAGE_TITLE?.trim() || "TopStar 영어학원 숙제 체크리스트",
   outputDir: process.env.OUTPUT_DIR?.trim() || "./public",

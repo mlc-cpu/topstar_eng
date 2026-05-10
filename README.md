@@ -11,6 +11,7 @@
 - 수집은 `HTTP API(cookie 세션)` 우선, 실패 시 `Playwright` 폴백
 - 반 버튼 클릭 시 필터만 변경하고, 데이터는 자동 갱신 주기(기본 10분)로 반영
 - 수집/렌더링은 `npm run sync` 한 번으로 생성
+- 운영 스케줄과 배포는 서버가 아니라 GitHub Actions에서 관리
 - 앱 아이콘은 `assets/topstar-logo.png`를 사용
 
 ## 설치된 skills.sh 스킬
@@ -18,7 +19,7 @@
 1. `github/awesome-copilot@playwright-explore-website`
 2. `github/awesome-copilot@playwright-automation-fill-in-form`
 3. `github/awesome-copilot@playwright-generate-test`
-4. `chaterm/terminal-skills@cron`
+4. GitHub Actions schedule
 
 ## 동작 구조
 
@@ -62,6 +63,7 @@ cp .env.example .env
 - `QUIET_HOURS_END=6`
 - `TIME_ZONE=Asia/Seoul`
 - `REQUIRE_LOGIN=true`
+- `LOCAL_AUTO_SYNC=false`
 
 3. 로그인 세션 저장(권장)
 
@@ -84,45 +86,9 @@ npm run sync
 npm run serve
 ```
 
-## SSH 원격 상시 운영 (권장)
+`npm run serve`는 로컬 미리보기용입니다. 기본값에서는 주기 수집을 실행하지 않으며, 운영용 상시 서버는 사용하지 않습니다.
 
-대상 서버: `jayoc@192.168.1.100`
-
-1. 원격 설치 + 상시 실행 잡 등록
-
-```bash
-npm run remote:setup
-```
-
-- 원격에서 `npm ci`, `playwright chromium` 설치
-- `launchd` 잡 등록:
-- `com.jayoc.topstar_eng.server` (상시 웹서버)
-- `com.jayoc.topstar_eng.sync` (1시간 주기 동기화, 00:00-06:00 자동 수집 스킵)
-
-2. 원격 상태 확인
-
-```bash
-npm run remote:status
-```
-
-3. 원격 수동 동기화
-
-```bash
-npm run remote:sync
-```
-
-4. 태블릿 접속 주소
-
-`http://192.168.1.100:4173`
-
-### 로그인 필수 카페 주의
-
-- 현재 카페는 로그인 세션이 없으면 `sync`가 실패하도록 설정되어 있습니다 (`REQUIRE_LOGIN=true`).
-- 원격에서 세션을 만들려면 아래 중 하나가 필요합니다.
-- 원격 서버에서 브라우저로 `npm run login` 1회 수행
-- 또는 원격 `.env`에 `NAVER_ID`, `NAVER_PASSWORD` 설정 후 자동 로그인 사용
-
-## GitHub Pages 배포
+## GitHub 운영
 
 워크플로 파일: `.github/workflows/deploy-pages.yml`
 
@@ -131,6 +97,7 @@ npm run remote:sync
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정
 - Pages 주소: `https://mlc-cpu.github.io/topstar_eng/`
 - 짧은 주소: `https://is.gd/qDMgMU`
+- 운영 상태는 배포된 `homework.json`의 `generatedAt`과 `public/run-state.json` 아티팩트를 기준으로 확인합니다.
 
 ### GitHub Secrets
 
@@ -143,14 +110,21 @@ npm run remote:sync
 자동수집을 최대한 안정적으로 유지하려면:
 - `NAVER_STORAGE_STATE_JSON`을 우선 유지 (HTTP API 본문 수집에 사용)
 - `NAVER_ID` + `NAVER_PASSWORD`는 보조 fallback으로 함께 설정
+- 세션이 만료되면 GitHub Actions가 보조 계정 정보로 재로그인하고 새 세션을 다시 저장
 - 워크플로는 인증정보를 필요한 단계에만 주입하고, 실행 후 세션 파일을 즉시 삭제
-- API 수집 실패가 반복되면 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON`을 갱신
+- 2FA/캡차 등으로 자동 로그인이 막힐 때만 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON`을 갱신
 
 세션 만료 자동 갱신(권장):
 - `GH_SECRET_UPDATE_TOKEN`을 설정하면, 워크플로가 실행 중 생성/갱신된 `.state/naver-storage-state.json`을
   `NAVER_STORAGE_STATE_JSON` Secret으로 자동 덮어씁니다.
 - 워크플로는 먼저 기본 `github.token`으로 갱신을 시도합니다.
 - 권한 부족으로 실패하면 `GH_SECRET_UPDATE_TOKEN`(해당 저장소의 Actions Secret 쓰기 권한 포함)을 설정하면 됩니다.
+
+### 수동 운영
+
+- 즉시 갱신: GitHub Actions의 `Build and Deploy Homework Page` 워크플로에서 `Run workflow`
+- 설정 변경: Repository `Settings > Secrets and variables > Actions`에서 Secret/Variable 수정
+- 배포 확인: `Actions` 탭의 최신 실행 로그와 Pages 주소의 `homework.json` 확인
 
 ### GitHub Variables(선택)
 
@@ -168,7 +142,7 @@ npm run remote:sync
 ## 운영 시 주의
 
 - 네이버 보안정책(2FA/캡차)로 GitHub-hosted runner 로그인 자동화가 실패할 수 있습니다.
-- 이 경우 로컬/자체 러너에서 `npm run sync` 후 Pages 배포하는 방식이 안정적입니다.
+- 이 경우에만 로컬에서 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON` Secret을 갱신하면 됩니다.
 - 아이디/비번은 저장소에 커밋하지 않습니다.
 
 ## 이어서 작업할 때

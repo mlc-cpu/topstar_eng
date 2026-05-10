@@ -5,7 +5,7 @@
 
 ## Orchestrator
 - `homework-orchestrator`
-- 순서: 수집 -> 파싱 -> 퍼블리시 -> 스케줄 운영
+- 순서: 수집 -> 파싱 -> 퍼블리시 -> GitHub Actions 운영
 
 ## Sub-agents
 1. `cafe-collector-agent`
@@ -24,11 +24,12 @@
 - 산출물: `public/homework.json`, `public/index.html` (최근 `RECENT_DAYS`, 기본 2일만 노출)
 
 4. `schedule-ops-agent`
-- 책임: cron 기반 주기 실행, run state 관리
-- 사용 스킬: `cron`
-- 산출물: `.state/run-state.json`
+- 책임: GitHub Actions 스케줄/수동 실행, Pages 배포 상태 관리
+- 사용 스킬: GitHub Actions workflow (`.github/workflows/deploy-pages.yml`)
+- 산출물: GitHub Pages artifact, `public/run-state.json`
 
 ## Credentials
 - 기본 권장: `npm run login`으로 수동 로그인 세션(`.state/naver-storage-state.json`) 저장.
-- 자동 로그인 필요 시에만 `NAVER_ID`, `NAVER_PASSWORD`를 `.env`에서 읽는다.
+- GitHub 운영 시 `NAVER_STORAGE_STATE_JSON` Secret을 우선 사용한다.
+- 자동 로그인 필요 시에만 `NAVER_ID`, `NAVER_PASSWORD`를 `.env` 또는 GitHub Secrets에서 읽는다.
 - 저장소 커밋 금지.
