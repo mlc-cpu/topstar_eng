@@ -221,6 +221,12 @@ jobs:
           fi
 
           echo "sync_succeeded=false" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "::error::sync failed on a manual/push run. Not deploying stale fallback files."
+            exit 1
+          fi
+
           echo "::warning::sync failed again. Restoring fallback static files."
           mkdir -p public
 

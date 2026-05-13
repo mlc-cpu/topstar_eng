@@ -113,6 +113,8 @@ npm run serve
 - 세션이 만료되면 GitHub Actions가 보조 계정 정보로 재로그인하고 새 세션을 다시 저장
 - 워크플로는 인증정보를 필요한 단계에만 주입하고, 실행 후 세션 파일을 즉시 삭제
 - 2FA/캡차 등으로 자동 로그인이 막힐 때만 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON`을 갱신
+- 수동 실행(`workflow_dispatch`) 또는 `main` 푸시에서 수집이 실패하면 기존 정적 파일을 재배포하지 않고 실패로 표시합니다.
+  스케줄 실행에서만 Pages를 깨뜨리지 않기 위해 기존 배포본을 보존합니다.
 
 세션 만료 자동 갱신(권장):
 - `GH_SECRET_UPDATE_TOKEN`을 설정하면, 워크플로가 실행 중 생성/갱신된 `.state/naver-storage-state.json`을
