@@ -159,13 +159,9 @@ function extractBodyTextFromContentHtml(contentHtml) {
 }
 
 async function loadCookieHeaderFromStorageState() {
-  if (config.naverCookieHeader) {
-    return config.naverCookieHeader;
-  }
-
   const storageState = await readJson(config.storageStateFile, null);
   if (!storageState || typeof storageState !== "object") {
-    return "";
+    return config.naverCookieHeader;
   }
 
   const nowSec = Date.now() / 1000;
@@ -178,7 +174,7 @@ async function loadCookieHeaderFromStorageState() {
     return expires > nowSec;
   });
 
-  return validCookies
+  const storageCookieHeader = validCookies
     .map((cookie) => {
       const name = String(cookie?.name ?? "").trim();
       const value = String(cookie?.value ?? "");
@@ -189,6 +185,8 @@ async function loadCookieHeaderFromStorageState() {
     })
     .filter(Boolean)
     .join("; ");
+
+  return storageCookieHeader || config.naverCookieHeader;
 }
 
 async function fetchJson(url, options = {}) {
