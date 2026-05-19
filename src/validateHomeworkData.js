@@ -53,6 +53,13 @@ function validatePost(post, index, issues) {
     return;
   }
 
+  if (
+    post.items.length === 1 &&
+    String(post.items[0]?.text ?? "").trim() === "게시글 원문을 확인하세요."
+  ) {
+    pushIssue(issues, `${prefix}.items contains only the fallback source-check item`);
+  }
+
   post.items.forEach((item, itemIndex) => {
     if (!item || typeof item !== "object") {
       pushIssue(issues, `${prefix}.items[${itemIndex}] must be an object`);

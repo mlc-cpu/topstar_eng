@@ -36,6 +36,8 @@ const CLASS_MENU_FUZZY_ALIASES = [
 ];
 const NAVER_PC_USER_AGENT =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
+const LOGIN_REQUIRED_MESSAGE =
+  "이 게시판은 로그인 세션이 필요합니다. `npm run login`으로 1회 로그인 세션을 저장한 뒤 `npm run sync`를 다시 실행하세요.";
 
 function extractCafeIdFromBoardUrl(boardUrl) {
   const raw = String(boardUrl ?? "");
@@ -263,9 +265,33 @@ async function pageLooksLikeLoginGate(page) {
 }
 
 function loginRequiredError() {
-  return new Error(
-    "이 게시판은 로그인 세션이 필요합니다. `npm run login`으로 1회 로그인 세션을 저장한 뒤 `npm run sync`를 다시 실행하세요."
-  );
+  return new Error(LOGIN_REQUIRED_MESSAGE);
+}
+
+function isLoginRequiredError(error) {
+  return String(error?.message || "").includes(LOGIN_REQUIRED_MESSAGE);
+}
+
+function getBrowserLaunchOptions() {
+  return {
+    headless: config.headless,
+    args: ["--disable-blink-features=AutomationControlled"],
+  };
+}
+
+async function applyBrowserAutomationEvasions(context) {
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", {
+      get: () => undefined,
+    });
+  });
+}
+
+async function replaceInputWithKeyboard(page, selector, value) {
+  const locator = page.locator(selector).first();
+  await locator.click({ clickCount: 3 });
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type(value, { delay: 45 });
 }
 
 function looksLikeLoadingPlaceholder(text) {
@@ -297,12 +323,17 @@ async function loginIfNeeded(page) {
     );
   }
 
-  await page.fill("input#id", config.naverId);
-  await page.fill("input#pw", config.naverPassword);
+  await replaceInputWithKeyboard(page, "input#id", config.naverId);
+  await replaceInputWithKeyboard(page, "input#pw", config.naverPassword);
 
   const loginButton = page.locator("button.btn_login, input.btn_login").first();
-  await loginButton.click();
-  await page.waitForTimeout(3000);
+  await Promise.allSettled([
+    page.waitForURL((nextUrl) => !/nidlogin\.login/i.test(String(nextUrl)), {
+      timeout: 12_000,
+    }),
+    loginButton.click(),
+  ]);
+  await page.waitForTimeout(2500);
 
   if (loginUrlPattern.test(page.url())) {
     throw new Error(
@@ -561,6 +592,10 @@ async function getPostDetail(context, post) {
 
     if (looksLikeLoadingPlaceholder(bodyText)) {
       bodyText = "";
+    }
+
+    if (config.requireLogin && !normalizeText(bodyText)) {
+      throw loginRequiredError();
     }
 
     const publishedAt = await pickFirstText(frame, [
@@ -947,23 +982,29 @@ async function collectHomeworkPostsViaApi() {
   return posts;
 }
 
-async function collectHomeworkPostsViaBrowser() {
+async function collectHomeworkPostsViaBrowser(options = {}) {
   if (!config.boardUrl) {
     throw new Error("Missing required environment variable: NAVER_CAFE_BOARD_URL");
   }
 
-  const browser = await chromium.launch({ headless: config.headless });
+  const forceCredentialLogin = Boolean(options.forceCredentialLogin);
+  const browser = await chromium.launch(getBrowserLaunchOptions());
 
   const context = await browser.newContext({
     storageState: existsSync(config.storageStateFile)
       ? config.storageStateFile
       : undefined,
   });
+  await applyBrowserAutomationEvasions(context);
 
   try {
     const page = await context.newPage();
 
-    await ensureAuthenticatedSession(page);
+    if (forceCredentialLogin && hasCredentialLoginConfig()) {
+      await loginWithCredentials(page, "api_auth_failed");
+    } else {
+      await ensureAuthenticatedSession(page);
+    }
 
     await page.goto(config.boardUrl, {
       waitUntil: "domcontentloaded",
@@ -1112,7 +1153,9 @@ export async function collectHomeworkPosts() {
   }
 
   try {
-    const browserPosts = await collectHomeworkPostsViaBrowser();
+    const browserPosts = await collectHomeworkPostsViaBrowser({
+      forceCredentialLogin: isLoginRequiredError(apiError),
+    });
     console.log("[collect] collector path=browser");
     return browserPosts;
   } catch (browserError) {

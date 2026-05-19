@@ -15,6 +15,8 @@ on:
       - ".github/workflows/deploy-pages.yml"
       - ".env.example"
       - "README.md"
+      - "docs/**"
+      - "scripts/**"
 
 permissions:
   contents: read
@@ -113,23 +115,106 @@ jobs:
         if: steps.schedule-guard.outputs.skipped != 'true'
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Detect prebuilt docs publish
+        id: prebuilt
         if: steps.schedule-guard.outputs.skipped != 'true'
+        run: |
+          set -euo pipefail
+          use_prebuilt=false
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            commit_message="$(git log -1 --pretty=%B)"
+            if printf '%s' "$commit_message" | grep -q '\[local-sync\]'; then
+              use_prebuilt=true
+            fi
+          fi
+
+          echo "use_prebuilt=${use_prebuilt}" >> "$GITHUB_OUTPUT"
+          echo "::notice::use_prebuilt_docs=${use_prebuilt}"
+
+      - name: Prepare prebuilt docs
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt == 'true'
+        run: |
+          set -euo pipefail
+          rm -rf public
+          mkdir -p public
+
+          required_missing=0
+          for file in homework.json index.html; do
+            if [ ! -s "docs/${file}" ]; then
+              echo "::error::docs/${file} is missing or empty."
+              required_missing=1
+            fi
+          done
+          if [ "$required_missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          for file in homework.json index.html manifest.webmanifest sw.js icon.png icon.svg short-url.txt .nojekyll; do
+            if [ -e "docs/${file}" ]; then
+              cp "docs/${file}" "public/${file}"
+            fi
+          done
+          : > public/.nojekyll
+
+      - name: Validate prebuilt docs
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt == 'true'
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require("fs");
+          const payload = JSON.parse(fs.readFileSync("public/homework.json", "utf8"));
+          const issues = [];
+
+          if (!payload.generatedAt || Number.isNaN(Date.parse(payload.generatedAt))) {
+            issues.push("generatedAt must be a valid ISO date");
+          }
+          if (!Array.isArray(payload.posts) || payload.posts.length < 1) {
+            issues.push("posts must contain at least one post");
+          } else {
+            payload.posts.forEach((post, index) => {
+              if (
+                Array.isArray(post.items) &&
+                post.items.length === 1 &&
+                String(post.items[0]?.text || "").trim() === "게시글 원문을 확인하세요."
+              ) {
+                issues.push(`posts[${index}] contains only the fallback source-check item`);
+              }
+            });
+          }
+          if (!payload.matchedClassCount || payload.matchedClassCount < 1) {
+            issues.push("matchedClassCount must be at least 1");
+          }
+
+          if (issues.length > 0) {
+            for (const issue of issues) {
+              console.error(`::error::${issue}`);
+            }
+            process.exit(1);
+          }
+
+          console.log(
+            `prebuilt docs ok: generatedAt=${payload.generatedAt}, posts=${payload.posts.length}`
+          );
+          NODE
+
+      - name: Setup Node
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
-        if: steps.schedule-guard.outputs.skipped != 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true'
         run: npm ci
 
       - name: Install Playwright browser
-        if: steps.schedule-guard.outputs.skipped != 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Restore optional storage state
-        if: steps.schedule-guard.outputs.skipped != 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true'
         env:
           NAVER_STORAGE_STATE_JSON: ${{ secrets.NAVER_STORAGE_STATE_JSON }}
         run: |
@@ -140,7 +225,7 @@ jobs:
 
       - name: Resolve auth strategy
         id: auth-strategy
-        if: steps.schedule-guard.outputs.skipped != 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true'
         run: |
           set -euo pipefail
           has_state=false
@@ -166,7 +251,7 @@ jobs:
           echo "::notice::naver auth strategy=${strategy}"
 
       - name: Randomized schedule delay
-        if: steps.schedule-guard.outputs.skipped != 'true' && github.event_name == 'schedule'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true' && github.event_name == 'schedule'
         env:
           SCHEDULE_JITTER_MAX_SECONDS: ${{ vars.SCHEDULE_JITTER_MAX_SECONDS || '240' }}
         run: |
@@ -188,7 +273,7 @@ jobs:
 
       - name: Build static page
         id: build-static
-        if: steps.schedule-guard.outputs.skipped != 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true'
         env:
           NAVER_ID: ${{ secrets.NAVER_ID }}
           NAVER_PASSWORD: ${{ secrets.NAVER_PASSWORD }}
@@ -292,7 +377,7 @@ jobs:
         run: npm run validate
 
       - name: Refresh NAVER storage state proactively
-        if: steps.schedule-guard.outputs.skipped != 'true' && steps.build-static.outputs.sync_succeeded == 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true' && steps.build-static.outputs.sync_succeeded == 'true'
         continue-on-error: true
         env:
           NAVER_ID: ${{ secrets.NAVER_ID }}
@@ -329,7 +414,7 @@ jobs:
           npm run refresh-session
 
       - name: Rotate NAVER storage-state secret
-        if: steps.schedule-guard.outputs.skipped != 'true' && steps.build-static.outputs.sync_succeeded == 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true' && steps.build-static.outputs.sync_succeeded == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_SECRET_UPDATE_TOKEN != '' && secrets.GH_SECRET_UPDATE_TOKEN || github.token }}
         run: |
@@ -350,7 +435,7 @@ jobs:
           fi
 
       - name: Remove transient auth files
-        if: steps.schedule-guard.outputs.skipped != 'true'
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true'
         run: rm -f .state/naver-storage-state.json
 
       - name: Upload Pages artifact

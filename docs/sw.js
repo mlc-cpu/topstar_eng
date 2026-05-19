@@ -1,11 +1,10 @@
-const CACHE_NAME = "topstar-eng-v1";
+const CACHE_NAME = "topstar-eng-v2";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./icon.png",
   "./icon.svg",
-  "./homework.json",
   "./short-url.txt"
 ];
 
@@ -40,13 +39,13 @@ self.addEventListener("fetch", (event) => {
   const isHomeworkJson = url.pathname.endsWith("/homework.json") || url.pathname.endsWith("homework.json");
   if (isHomeworkJson) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: "no-store" })
         .then((response) => {
           const cloned = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
+          caches.open(CACHE_NAME).then((cache) => cache.put("./homework.json", cloned));
           return response;
         })
-        .catch(() => caches.match(request))
+        .catch(() => caches.match("./homework.json"))
     );
     return;
   }

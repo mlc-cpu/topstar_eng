@@ -12,7 +12,7 @@
 - 반 버튼 클릭 시 필터만 변경하고, 데이터는 자동 갱신 주기(기본 10분)로 반영
 - 수집/렌더링은 `npm run sync` 한 번으로 생성
 - `npm run build`는 생성 후 `homework.json` 구조/최소 게시글 수를 검증
-- 운영 스케줄과 배포는 서버가 아니라 GitHub Actions에서 관리
+- GitHub Actions 배포를 기본으로 사용하되, 네이버가 GitHub-hosted runner 로그인을 막는 경우 로컬 Mac 게시 경로를 사용
 - 앱 아이콘은 `assets/topstar-logo.png`를 사용
 
 ## 설치된 skills.sh 스킬
@@ -112,6 +112,7 @@ npm run serve
 
 - 5분 간격 체크(`02,07,12,17,22,27,32,37,42,47,52,57`분 실행, 00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 실제 수집은 10분 쿨다운 이후에만 수행 + 수동 실행 + `main` 푸시 시 배포
 - `public/` 폴더를 GitHub Pages로 게시
+- `[local-sync]` 커밋은 네이버 수집을 다시 실행하지 않고 커밋된 `docs/` 결과물을 그대로 Pages에 배포
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정
 - Pages 주소: `https://mlc-cpu.github.io/topstar_eng/`
 - 짧은 주소: `https://is.gd/qDMgMU`
@@ -134,11 +135,28 @@ npm run serve
 - 생성된 `homework.json`이 비어 있거나 필수 필드가 깨지면 배포 전에 실패 처리
 - 워크플로는 인증정보를 필요한 단계에만 주입하고, 실행 후 세션 파일을 즉시 삭제
 - 2FA/캡차 등으로 자동 로그인이 막힐 때만 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON`을 갱신
-- GitHub-hosted runner 자동 로그인이 계속 막히면, 로그인된 일반 브라우저의 네이버 카페 게시글 요청에서 `Cookie` 요청 헤더를 복사해
-  `NAVER_COOKIE_HEADER` Secret으로 저장하면 됩니다. 이 값은 비밀번호와 같은 수준의 세션 정보이므로 저장소 파일에 커밋하지 않습니다.
+- GitHub-hosted runner 자동 로그인이 계속 막히면, 로컬 Mac 게시 모드(`scripts/local-sync-and-publish.sh`)를 사용합니다.
+  이 모드는 이 Mac에 저장된 네이버 세션으로 `docs/`를 생성하고 `[local-sync]` 커밋을 푸시해 GitHub Pages만 배포하게 합니다.
 - 수동 실행(`workflow_dispatch`), `main` 푸시, 스케줄 실행 모두 수집이 실패하면 기존 정적 파일을 재배포하지 않고 실패로 표시합니다.
   기존 Pages 배포본은 그대로 남지만, Actions가 실패 상태가 되어 문제를 바로 확인할 수 있습니다.
 - 예외적으로 실패해도 기존 파일을 재배포해야 하는 운영 모드가 필요하면 `ALLOW_STALE_FALLBACK_DEPLOY=true`를 GitHub Variable로 설정합니다.
+
+### 로컬 Mac 게시 모드
+
+네이버가 GitHub-hosted runner의 로그인/쿠키를 반복해서 무효 처리하면 이 모드를 사용합니다.
+
+```bash
+npm run login
+scripts/install-local-sync-launchd.sh
+```
+
+- `npm run login`으로 `.state/naver-storage-state.json`을 한 번 저장합니다.
+- 설치 스크립트는 launchd 작업 `com.mullae.topstar-eng-local-sync`를 등록합니다.
+- 기본 5분마다 실행되고, `npm run sync -- --scheduled`의 조용한 시간/쿨다운 정책을 그대로 따릅니다.
+- 변경이 생기면 `docs/`만 커밋하고 `Update homework data [local-sync]` 메시지로 푸시합니다.
+- GitHub Actions는 `[local-sync]` 커밋을 감지하면 네이버 수집을 건너뛰고 `docs/`를 그대로 Pages에 배포합니다.
+- 로그: `.logs/local-sync.log`, `.logs/launchd.out.log`, `.logs/launchd.err.log`
+- 해제: `scripts/uninstall-local-sync-launchd.sh`
 
 세션 만료 자동 갱신(권장):
 - `GH_SECRET_UPDATE_TOKEN`을 설정하면, 워크플로가 실행 중 생성/갱신된 `.state/naver-storage-state.json`을
@@ -189,5 +207,6 @@ npm run serve
 
 현재 운영 기준:
 - GitHub Actions는 5분 간격으로 상태를 체크하고, 실제 수집은 10분 쿨다운이 지난 경우에만 수행합니다.
-- 세션은 `NAVER_STORAGE_STATE_JSON`으로 유지하고, `GH_SECRET_UPDATE_TOKEN`이 있으면 워크플로가 세션 Secret을 자동 갱신합니다.
+- GitHub-hosted runner 수집이 네이버 인증에서 막히면 로컬 Mac 게시 모드가 우선 운영 경로입니다.
+- 세션은 `NAVER_STORAGE_STATE_JSON` 또는 로컬 `.state/naver-storage-state.json`으로 유지합니다.
 - UI 상태 문구는 마지막 업데이트 경과 시간과 자동 업데이트 대기 상태를 함께 표시합니다.
