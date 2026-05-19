@@ -300,8 +300,8 @@ export function renderHomeworkHtml({ pageTitle }) {
 
     <script>
       const STORAGE_PREFIX = "homework-check:";
-      const DEFAULT_CLASS_KEY = "homework-default-class";
-      const DEFAULT_CLASS = "Ace";
+      const DEFAULT_CLASS_KEY = "homework-selected-class-v2";
+      const DEFAULT_CLASS = "";
       const CLASS_ORDER = ["Ace", "Star", "Top", "Peak", "Champion", "Radiant"];
       const CLASS_SET = new Set(CLASS_ORDER);
       const CLASS_LABEL_MAP = {
@@ -430,10 +430,27 @@ export function renderHomeworkHtml({ pageTitle }) {
         };
       }
 
+      function postSortScore(post) {
+        const dateScore = Date.parse(post.postDate || post.publishedAt || "");
+        if (Number.isFinite(dateScore)) {
+          return dateScore;
+        }
+
+        const postIdScore = Number.parseInt(String(post.postId || ""), 10);
+        return Number.isFinite(postIdScore) ? postIdScore : 0;
+      }
+
       function filterPostsBySelectedClass(posts) {
         const selectedClass = getDefaultClass();
         if (!selectedClass) {
-          return [...posts];
+          return [...posts].sort((left, right) => {
+            const scoreDiff = postSortScore(right) - postSortScore(left);
+            if (scoreDiff !== 0) {
+              return scoreDiff;
+            }
+
+            return CLASS_ORDER.indexOf(extractClassName(left)) - CLASS_ORDER.indexOf(extractClassName(right));
+          });
         }
 
         return posts.filter((post) => extractClassName(post) === selectedClass);
@@ -472,6 +489,10 @@ export function renderHomeworkHtml({ pageTitle }) {
 
         const classSequence = [...CLASS_ORDER].concat(
           knownClasses.filter((className) => !CLASS_SET.has(className))
+        );
+
+        classOptionsEl.appendChild(
+          createClassOptionButton({ label: "전체", value: "" }, defaultClass)
         );
 
         for (const className of classSequence) {
@@ -637,6 +658,13 @@ export function renderHomeworkHtml({ pageTitle }) {
         const generatedAt = data?.generatedAt || "";
         const refreshCooldownSeconds = data?.source?.refreshCooldownSeconds || 0;
         const parsed = new Date(generatedAt);
+        const posts = Array.isArray(data?.posts) ? data.posts : [];
+        const latestPostDate = posts
+          .map((post) => post.postDate || post.publishedAt || "")
+          .filter(Boolean)
+          .sort()
+          .at(-1);
+        const latestLabel = latestPostDate ? ", 최신 숙제 " + latestPostDate : "";
 
         if (Number.isNaN(parsed.getTime())) {
           return "업데이트 예정";
@@ -645,10 +673,10 @@ export function renderHomeworkHtml({ pageTitle }) {
         const cooldownSeconds = Math.max(0, Number(refreshCooldownSeconds) || 0);
         const nextRefreshAt = parsed.getTime() + (cooldownSeconds * 1000);
         if (Date.now() >= nextRefreshAt) {
-          return "마지막 업데이트 " + formatElapsedLabel(generatedAt) + " 전, 자동 업데이트 대기 중";
+          return "마지막 업데이트 " + formatElapsedLabel(generatedAt) + " 전" + latestLabel + ", 자동 업데이트 대기 중";
         }
 
-        return "마지막 업데이트 " + formatElapsedLabel(generatedAt) + " 전, 약 " + formatCooldownLabel(refreshCooldownSeconds) + " 주기 자동 업데이트";
+        return "마지막 업데이트 " + formatElapsedLabel(generatedAt) + " 전" + latestLabel + ", 약 " + formatCooldownLabel(refreshCooldownSeconds) + " 주기 자동 업데이트";
       }
 
       async function render({ useCache = false } = {}) {
@@ -694,7 +722,22 @@ export function renderHomeworkHtml({ pageTitle }) {
 
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./sw.js").catch(() => undefined);
+          navigator.serviceWorker
+            .register("./sw.js")
+            .then((registration) => {
+              registration.update().catch(() => undefined);
+            })
+            .catch(() => undefined);
+        });
+
+        let reloadedByNewWorker = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloadedByNewWorker) {
+            return;
+          }
+
+          reloadedByNewWorker = true;
+          window.location.reload();
         });
       }
 
