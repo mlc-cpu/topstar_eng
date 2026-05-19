@@ -186,6 +186,7 @@ scripts/install-local-sync-launchd.sh
 - `MIN_MATCHED_CLASSES` (기본 `1`)
 - `MAX_GENERATED_AGE_MINUTES` (기본 `30`)
 - `ALLOW_STALE_FALLBACK_DEPLOY` (기본 `false`)
+- `LOCAL_PUBLISH_MODE` (로컬 Mac 게시 모드 사용 시 `true`; GitHub-hosted 스케줄 수집은 스킵)
 - `NAVER_SESSION_REFRESH_HOUR` (기본 `7`, KST 기준)
 
 ## 운영 시 주의
@@ -208,5 +209,6 @@ scripts/install-local-sync-launchd.sh
 현재 운영 기준:
 - GitHub Actions는 5분 간격으로 상태를 체크하고, 실제 수집은 10분 쿨다운이 지난 경우에만 수행합니다.
 - GitHub-hosted runner 수집이 네이버 인증에서 막히면 로컬 Mac 게시 모드가 우선 운영 경로입니다.
+- `LOCAL_PUBLISH_MODE=true`이면 GitHub-hosted 스케줄 수집은 실패 로그를 만들지 않고 스킵합니다.
 - 세션은 `NAVER_STORAGE_STATE_JSON` 또는 로컬 `.state/naver-storage-state.json`으로 유지합니다.
 - UI 상태 문구는 마지막 업데이트 경과 시간과 자동 업데이트 대기 상태를 함께 표시합니다.

@@ -52,6 +52,7 @@ jobs:
       MIN_MATCHED_CLASSES: ${{ vars.MIN_MATCHED_CLASSES || '1' }}
       MAX_GENERATED_AGE_MINUTES: ${{ vars.MAX_GENERATED_AGE_MINUTES || '30' }}
       ALLOW_STALE_FALLBACK_DEPLOY: ${{ vars.ALLOW_STALE_FALLBACK_DEPLOY || 'false' }}
+      LOCAL_PUBLISH_MODE: ${{ vars.LOCAL_PUBLISH_MODE || 'false' }}
       NAVER_SESSION_REFRESH_HOUR: ${{ vars.NAVER_SESSION_REFRESH_HOUR || '7' }}
       HEADLESS: "true"
       OUTPUT_DIR: ./public
@@ -70,6 +71,15 @@ jobs:
           reason=""
 
           if [ "${{ github.event_name }}" = "schedule" ]; then
+            local_publish_mode="$(printf '%s' "${LOCAL_PUBLISH_MODE:-false}" | tr '[:upper:]' '[:lower:]')"
+            if [ "$local_publish_mode" = "true" ]; then
+              skipped=true
+              reason="local_publish_mode"
+              echo "::notice::scheduled GitHub-hosted sync skipped: LOCAL_PUBLISH_MODE=true."
+            fi
+          fi
+
+          if [ "$skipped" != true ] && [ "${{ github.event_name }}" = "schedule" ]; then
             current_hour=$((10#$(TZ=Asia/Seoul date +%H)))
             start_hour=$((10#${QUIET_HOURS_START}))
             end_hour=$((10#${QUIET_HOURS_END}))
