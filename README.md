@@ -11,6 +11,7 @@
 - 수집은 `HTTP API(cookie 세션)` 우선, 실패 시 `Playwright` 폴백
 - 반 버튼 클릭 시 필터만 변경하고, 데이터는 자동 갱신 주기(기본 10분)로 반영
 - 수집/렌더링은 `npm run sync` 한 번으로 생성
+- `npm run build`는 생성 후 `homework.json` 구조/최소 게시글 수를 검증
 - 운영 스케줄과 배포는 서버가 아니라 GitHub Actions에서 관리
 - 앱 아이콘은 `assets/topstar-logo.png`를 사용
 
@@ -32,7 +33,13 @@
 3. `src/main.js`
 - 작성자/제목 필터 + 반별 개수 제한 적용 후 `public/homework.json`, `public/index.html` 생성
 
-4. `src/htmlTemplate.js`
+4. `src/validateHomeworkData.js`
+- 생성된 `homework.json`이 비어 있거나 필수 필드가 빠진 경우 배포 전 실패 처리
+
+5. `src/refreshStorageState.js`
+- 저장된 네이버 세션을 브라우저로 열어 주기적으로 다시 저장하고, Actions Secret 자동 갱신에 사용
+
+6. `src/htmlTemplate.js`
 - 모바일 우선 체크리스트 UI 렌더링
 
 ## 로컬 실행
@@ -62,6 +69,11 @@ cp .env.example .env
 - `QUIET_HOURS_START=0`
 - `QUIET_HOURS_END=6`
 - `TIME_ZONE=Asia/Seoul`
+- `MIN_GENERATED_POSTS=1`
+- `MIN_MATCHED_CLASSES=1`
+- `MAX_GENERATED_AGE_MINUTES=30`
+- `ALLOW_STALE_FALLBACK_DEPLOY=false`
+- `NAVER_SESSION_REFRESH_HOUR=7`
 - `REQUIRE_LOGIN=true`
 - `LOCAL_AUTO_SYNC=false`
 
@@ -80,7 +92,13 @@ npm run login
 npm run sync
 ```
 
-5. 확인
+5. 생성 결과 검증
+
+```bash
+npm run validate
+```
+
+6. 확인
 
 ```bash
 npm run serve
@@ -104,17 +122,23 @@ npm run serve
 - `NAVER_CAFE_BOARD_URL` (필수)
 - `NAVER_ID` (선택)
 - `NAVER_PASSWORD` (선택)
+- `NAVER_COOKIE_HEADER` (선택, 로그인된 브라우저의 네이버 요청 `Cookie` 헤더)
 - `NAVER_STORAGE_STATE_JSON` (선택, 세션 JSON 문자열)
 - `GH_SECRET_UPDATE_TOKEN` (선택, 자동 세션 갱신용 PAT)
 
 자동수집을 최대한 안정적으로 유지하려면:
-- `NAVER_STORAGE_STATE_JSON`을 우선 유지 (HTTP API 본문 수집에 사용)
+- `NAVER_COOKIE_HEADER` 또는 `NAVER_STORAGE_STATE_JSON`을 우선 유지 (HTTP API 본문 수집에 사용)
 - `NAVER_ID` + `NAVER_PASSWORD`는 보조 fallback으로 함께 설정
 - 세션이 만료되면 GitHub Actions가 보조 계정 정보로 재로그인하고 새 세션을 다시 저장
+- 매일 `NAVER_SESSION_REFRESH_HOUR`시 02분(KST 기본 07:02)에 저장된 세션을 사전 갱신하고, 성공하면 Secret을 다시 저장
+- 생성된 `homework.json`이 비어 있거나 필수 필드가 깨지면 배포 전에 실패 처리
 - 워크플로는 인증정보를 필요한 단계에만 주입하고, 실행 후 세션 파일을 즉시 삭제
 - 2FA/캡차 등으로 자동 로그인이 막힐 때만 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON`을 갱신
-- 수동 실행(`workflow_dispatch`) 또는 `main` 푸시에서 수집이 실패하면 기존 정적 파일을 재배포하지 않고 실패로 표시합니다.
-  스케줄 실행에서만 Pages를 깨뜨리지 않기 위해 기존 배포본을 보존합니다.
+- GitHub-hosted runner 자동 로그인이 계속 막히면, 로그인된 일반 브라우저의 네이버 카페 게시글 요청에서 `Cookie` 요청 헤더를 복사해
+  `NAVER_COOKIE_HEADER` Secret으로 저장하면 됩니다. 이 값은 비밀번호와 같은 수준의 세션 정보이므로 저장소 파일에 커밋하지 않습니다.
+- 수동 실행(`workflow_dispatch`), `main` 푸시, 스케줄 실행 모두 수집이 실패하면 기존 정적 파일을 재배포하지 않고 실패로 표시합니다.
+  기존 Pages 배포본은 그대로 남지만, Actions가 실패 상태가 되어 문제를 바로 확인할 수 있습니다.
+- 예외적으로 실패해도 기존 파일을 재배포해야 하는 운영 모드가 필요하면 `ALLOW_STALE_FALLBACK_DEPLOY=true`를 GitHub Variable로 설정합니다.
 
 세션 만료 자동 갱신(권장):
 - `GH_SECRET_UPDATE_TOKEN`을 설정하면, 워크플로가 실행 중 생성/갱신된 `.state/naver-storage-state.json`을
@@ -140,6 +164,11 @@ npm run serve
 - `QUIET_HOURS_END` (기본 `6`)
 - `SCHEDULE_JITTER_MAX_SECONDS` (기본 `240`, 최대 `240`)
 - `PAGE_TITLE`
+- `MIN_GENERATED_POSTS` (기본 `1`)
+- `MIN_MATCHED_CLASSES` (기본 `1`)
+- `MAX_GENERATED_AGE_MINUTES` (기본 `30`)
+- `ALLOW_STALE_FALLBACK_DEPLOY` (기본 `false`)
+- `NAVER_SESSION_REFRESH_HOUR` (기본 `7`, KST 기준)
 
 ## 운영 시 주의
 

@@ -159,6 +159,10 @@ function extractBodyTextFromContentHtml(contentHtml) {
 }
 
 async function loadCookieHeaderFromStorageState() {
+  if (config.naverCookieHeader) {
+    return config.naverCookieHeader;
+  }
+
   const storageState = await readJson(config.storageStateFile, null);
   if (!storageState || typeof storageState !== "object") {
     return "";

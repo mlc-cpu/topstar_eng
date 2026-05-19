@@ -10,7 +10,9 @@
     "start": "npm run sync && npm run serve",
     "install-browser": "npx playwright install chromium",
     "login": "node src/login.js",
-    "build": "npm run sync"
+    "refresh-session": "node src/refreshStorageState.js",
+    "validate": "node src/validateHomeworkData.js",
+    "build": "npm run sync && npm run validate"
   },
   "keywords": [],
   "author": "",

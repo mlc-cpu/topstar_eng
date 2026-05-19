@@ -19,6 +19,7 @@ function toInt(value, fallback) {
 export const config = {
   naverId: process.env.NAVER_ID?.trim() ?? "",
   naverPassword: process.env.NAVER_PASSWORD?.trim() ?? "",
+  naverCookieHeader: process.env.NAVER_COOKIE_HEADER?.trim() ?? "",
   boardUrl: process.env.NAVER_CAFE_BOARD_URL?.trim() ?? "",
   headless: toBool(process.env.HEADLESS, true),
   requireLogin: toBool(process.env.REQUIRE_LOGIN, true),

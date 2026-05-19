@@ -35,6 +35,7 @@ jobs:
       skipped: ${{ steps.schedule-guard.outputs.skipped }}
     env:
       NAVER_CAFE_BOARD_URL: ${{ secrets.NAVER_CAFE_BOARD_URL }}
+      NAVER_COOKIE_HEADER: ${{ secrets.NAVER_COOKIE_HEADER }}
       HAS_NAVER_CREDENTIALS: ${{ secrets.NAVER_ID != '' && secrets.NAVER_PASSWORD != '' }}
       REQUIRE_LOGIN: ${{ vars.REQUIRE_LOGIN || 'true' }}
       MAX_POSTS: ${{ vars.MAX_POSTS || '80' }}
@@ -45,6 +46,11 @@ jobs:
       QUIET_HOURS_START: ${{ vars.QUIET_HOURS_START || '0' }}
       QUIET_HOURS_END: ${{ vars.QUIET_HOURS_END || '6' }}
       TIME_ZONE: ${{ vars.TIME_ZONE || 'Asia/Seoul' }}
+      MIN_GENERATED_POSTS: ${{ vars.MIN_GENERATED_POSTS || '1' }}
+      MIN_MATCHED_CLASSES: ${{ vars.MIN_MATCHED_CLASSES || '1' }}
+      MAX_GENERATED_AGE_MINUTES: ${{ vars.MAX_GENERATED_AGE_MINUTES || '30' }}
+      ALLOW_STALE_FALLBACK_DEPLOY: ${{ vars.ALLOW_STALE_FALLBACK_DEPLOY || 'false' }}
+      NAVER_SESSION_REFRESH_HOUR: ${{ vars.NAVER_SESSION_REFRESH_HOUR || '7' }}
       HEADLESS: "true"
       OUTPUT_DIR: ./public
       DATA_FILE: ./public/homework.json
@@ -227,7 +233,13 @@ jobs:
             exit 1
           fi
 
-          echo "::warning::sync failed again. Restoring fallback static files."
+          allow_stale_fallback="$(printf '%s' "${ALLOW_STALE_FALLBACK_DEPLOY:-false}" | tr '[:upper:]' '[:lower:]')"
+          if [ "$allow_stale_fallback" != "true" ]; then
+            echo "::error::scheduled sync failed. Keeping the existing Pages deployment and failing this run so the issue is visible."
+            exit 1
+          fi
+
+          echo "::warning::sync failed again. ALLOW_STALE_FALLBACK_DEPLOY=true, so restoring fallback static files."
           mkdir -p public
 
           restore_from_pages() {
@@ -274,6 +286,47 @@ jobs:
             echo "::error::Fallback static site restore was incomplete."
             exit 1
           fi
+
+      - name: Validate generated homework data
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.build-static.outputs.sync_succeeded == 'true'
+        run: npm run validate
+
+      - name: Refresh NAVER storage state proactively
+        if: steps.schedule-guard.outputs.skipped != 'true' && steps.build-static.outputs.sync_succeeded == 'true'
+        continue-on-error: true
+        env:
+          NAVER_ID: ${{ secrets.NAVER_ID }}
+          NAVER_PASSWORD: ${{ secrets.NAVER_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          should_refresh=false
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            should_refresh=true
+          else
+            current_hour="$(TZ="${TIME_ZONE}" date +%H)"
+            current_minute="$(TZ="${TIME_ZONE}" date +%M)"
+            refresh_hour="${NAVER_SESSION_REFRESH_HOUR:-7}"
+            if ! [[ "$refresh_hour" =~ ^[0-9]+$ ]]; then
+              refresh_hour=7
+            fi
+            refresh_hour=$((10#$refresh_hour))
+            if [ "$refresh_hour" -lt 0 ] || [ "$refresh_hour" -gt 23 ]; then
+              refresh_hour=7
+            fi
+            refresh_hour_padded="$(printf '%02d' "$refresh_hour")"
+
+            if [ "$current_hour" = "$refresh_hour_padded" ] && [ "$current_minute" = "02" ]; then
+              should_refresh=true
+            fi
+          fi
+
+          if [ "$should_refresh" != true ]; then
+            echo "::notice::Skipping proactive storage state refresh for this run."
+            exit 0
+          fi
+
+          npm run refresh-session
 
       - name: Rotate NAVER storage-state secret
         if: steps.schedule-guard.outputs.skipped != 'true' && steps.build-static.outputs.sync_succeeded == 'true'
