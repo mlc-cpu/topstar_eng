@@ -23,6 +23,11 @@ cat > "${PLIST}" <<PLIST
   </array>
   <key>WorkingDirectory</key>
   <string>${REPO_DIR}</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
   <key>StartInterval</key>
   <integer>${INTERVAL_SECONDS}</integer>
   <key>RunAtLoad</key>
