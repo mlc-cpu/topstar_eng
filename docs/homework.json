@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-20T14:52:23.619Z",
+  "generatedAt": "2026-05-20T21:01:40.658Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -14,8 +14,8 @@
     "pagesUrl": "https://mlc-cpu.github.io/topstar_eng/",
     "shortUrl": "https://is.gd/qDMgMU"
   },
-  "allPostCount": 31,
-  "filteredPostCount": 31,
+  "allPostCount": 30,
+  "filteredPostCount": 30,
   "matchedClassCount": 6,
   "posts": [
     {
@@ -380,45 +380,6 @@
         {
           "id": "5ff274c0f65e",
           "text": "단어 : 39 문장 시험 + 오답노트"
-        }
-      ]
-    },
-    {
-      "postId": "5514",
-      "title": "Radiant // Thursday, May 14, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5514?boardtype=L&menuid=25&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Radiant",
-      "publishedAt": "2026-05-14T10:03:54.650Z",
-      "postDate": "2026-05-14",
-      "items": [
-        {
-          "id": "d24ff634c6d6",
-          "text": "Unit 6 OO/OO + W.B"
-        },
-        {
-          "id": "9d2bb4131014",
-          "text": "Video + S.B"
-        },
-        {
-          "id": "b77ed53c10f3",
-          "text": "Mid-term Test"
-        },
-        {
-          "id": "9a0cd0195aba",
-          "text": "문법 : 영어 공책 써오기 (영어만)"
-        },
-        {
-          "id": "8fb4b3aee0b9",
-          "text": "문법 : ~132쪽 오답 노트"
-        },
-        {
-          "id": "ec091553076d",
-          "text": "문법 : ~ 135쪽 풀기 (형식쓰기)"
-        },
-        {
-          "id": "8b03440051a6",
-          "text": "The Wild Robot ~ Chapter 25 + Summary"
         }
       ]
     }
