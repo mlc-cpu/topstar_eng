@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-20T00:30:46.323Z",
+  "generatedAt": "2026-05-20T10:57:28.216Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -18,6 +18,33 @@
   "filteredPostCount": 31,
   "matchedClassCount": 6,
   "posts": [
+    {
+      "postId": "5559",
+      "title": "ACE // Wednesday, May 20, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5559?boardtype=L&menuid=38&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Ace",
+      "publishedAt": "2026-05-20T06:19:53.940Z",
+      "postDate": "2026-05-20",
+      "items": [
+        {
+          "id": "fe6b24428e32",
+          "text": "Picnic OO/O + 발음 적기 + i-e 동그라미하기"
+        },
+        {
+          "id": "fa4165819eb1",
+          "text": "영어 공책 - 끝말잊기 12개 적기 (한글 칸에 한글만)"
+        },
+        {
+          "id": "0b5443823eb7",
+          "text": "Voca"
+        },
+        {
+          "id": "c6fbb0dcb328",
+          "text": "R/L"
+        }
+      ]
+    },
     {
       "postId": "5537",
       "title": "ACE // Monday, May 18, 2026",
@@ -50,33 +77,33 @@
       ]
     },
     {
-      "postId": "5518",
-      "title": "ACE // Friday, May 15, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5518?boardtype=L&menuid=38&referrerAllArticles=false",
+      "postId": "5560",
+      "title": "STAR // Wednesday, May 20, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5560?boardtype=L&menuid=30&referrerAllArticles=false",
       "author": "그래그래그레이스",
-      "className": "Ace",
-      "publishedAt": "2026-05-15T06:12:18.293Z",
-      "postDate": "2026-05-15",
+      "className": "Star",
+      "publishedAt": "2026-05-20T07:34:33.450Z",
+      "postDate": "2026-05-20",
       "items": [
         {
-          "id": "c6dbb1481ccb",
-          "text": "Mike and Spike Hike OO/OO"
+          "id": "ffc2caa87cde",
+          "text": "Unit 14 OO/OO + W.B + 해석"
         },
         {
-          "id": "53478f2f4431",
-          "text": "Flake O녹화"
+          "id": "44023ae2285f",
+          "text": "Unit 15 OO/OO + S.B + 발음, 강세"
         },
         {
-          "id": "bd60536dfc05",
-          "text": "STWS 40쪽 풀기 + 39쪽 공책쓰기 영3 한2"
+          "id": "e33b52f49260",
+          "text": "단어 외우기 + 단어 오답 노트"
         },
         {
-          "id": "33c30815a722",
-          "text": "Voca"
+          "id": "7bb758e57811",
+          "text": "문법 : 싸인 받기 + 오답 노트"
         },
         {
-          "id": "89be096d8689",
-          "text": "R/L"
+          "id": "3e27e4c6e56c",
+          "text": "R.L"
         }
       ]
     },
@@ -116,37 +143,37 @@
       ]
     },
     {
-      "postId": "5521",
-      "title": "STAR // Friday, May 15, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5521?boardtype=L&menuid=30&referrerAllArticles=false",
+      "postId": "5562",
+      "title": "TOP // Wednesday, May 20, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5562?boardtype=L&menuid=22&referrerAllArticles=false",
       "author": "그래그래그레이스",
-      "className": "Star",
-      "publishedAt": "2026-05-15T07:28:18.443Z",
-      "postDate": "2026-05-15",
+      "className": "Top",
+      "publishedAt": "2026-05-20T08:56:59.470Z",
+      "postDate": "2026-05-20",
       "items": [
         {
-          "id": "571b787f282c",
-          "text": "Unit 12 OO/OO + W.B + 해석"
+          "id": "f8304e28aa27",
+          "text": "Unit 9 OO/OO + W.B"
         },
         {
-          "id": "ac4c3d468110",
-          "text": "Unit 13 OO/OO + S.B + 발음"
+          "id": "2466604a0d8f",
+          "text": "Unit 10 OO/OO + S.B + 발음, 강세"
         },
         {
-          "id": "e93a479235b4",
+          "id": "1b652e199b5c",
           "text": "단어 외우기 + 오답 노트"
         },
         {
-          "id": "107fe21c3554",
-          "text": "문법 : 18 ~ 21 오답 노트"
+          "id": "39c7c9607417",
+          "text": "문법 : 오노 24 ~ 27 쪽 (세세한)"
         },
         {
-          "id": "3910e6f23680",
-          "text": "문법 : 22 ~ 25 풀기"
+          "id": "1006ad5db8fd",
+          "text": "R/L"
         },
         {
-          "id": "d12674966cda",
-          "text": "R/L 2권"
+          "id": "0bb585e49b66",
+          "text": "charter 조사하기, 서울이 시로 인정된 날 조사하기"
         }
       ]
     },
@@ -186,33 +213,33 @@
       ]
     },
     {
-      "postId": "5523",
-      "title": "TOP // Friday, May 15, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5523?boardtype=L&menuid=22&referrerAllArticles=false",
+      "postId": "5564",
+      "title": "PEAK // Wednesday, May 20, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5564?boardtype=L&menuid=12&referrerAllArticles=false",
       "author": "그래그래그레이스",
-      "className": "Top",
-      "publishedAt": "2026-05-15T08:47:45.630Z",
-      "postDate": "2026-05-15",
+      "className": "Peak",
+      "publishedAt": "2026-05-20T10:16:13.337Z",
+      "postDate": "2026-05-20",
       "items": [
         {
-          "id": "9474fe212f77",
-          "text": "Unit 7 OO/OO + W.B"
+          "id": "d4e239a60f60",
+          "text": "Unit 10 OO/OO + W.B + 해석"
         },
         {
-          "id": "f2ac6e4bdceb",
-          "text": "Unit 8 OO/OO + S.B + 발음, 강세"
+          "id": "262173f18231",
+          "text": "Unit 10 S.B ~끝 (Voca 까지)"
         },
         {
-          "id": "7547c6de59cc",
-          "text": "단어 외우기 + 단어 오답노트"
+          "id": "aa6ee754cd8b",
+          "text": "단어 외우기 Day 18, 19 + 단어 오답 노트"
         },
         {
-          "id": "86b5a6822401",
-          "text": "문법 : 18 ~ 25쪽"
+          "id": "a9596c321f54",
+          "text": "문법 오답 노트 4~8 쪽 오답 노트"
         },
         {
-          "id": "7f369bdffffd",
-          "text": "R/L"
+          "id": "77082e639b93",
+          "text": "문법 9 ~ 12"
         }
       ]
     },
@@ -248,45 +275,6 @@
         {
           "id": "52046982e593",
           "text": "단어 : 오답노트 + Day 17 문장쓰기"
-        }
-      ]
-    },
-    {
-      "postId": "5524",
-      "title": "PEAK // Friday, May 15, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5524?boardtype=L&menuid=12&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Peak",
-      "publishedAt": "2026-05-15T10:14:24.410Z",
-      "postDate": "2026-05-15",
-      "items": [
-        {
-          "id": "847d33db9ce2",
-          "text": "Unit 9 OO/OO + S.B (전체)"
-        },
-        {
-          "id": "868833c84ce4",
-          "text": "Unit 8 O/O"
-        },
-        {
-          "id": "ceed225c32cb",
-          "text": "단어 17영 18한 + 오답 노트"
-        },
-        {
-          "id": "ac219719c57b",
-          "text": "Franklin 덕목 책상에 붙이고 인증샷!"
-        },
-        {
-          "id": "c4c14fd55eac",
-          "text": "문법 : 오답 노트"
-        },
-        {
-          "id": "1f7bb253f2d1",
-          "text": "문법 : W.B 21 ~ 22"
-        },
-        {
-          "id": "68a3fd8bf7aa",
-          "text": "MTH #19 Tigers + Summary"
         }
       ]
     },
