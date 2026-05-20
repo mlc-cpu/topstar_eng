@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-19T23:48:33.487Z",
+  "generatedAt": "2026-05-20T00:00:19.277Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -7,7 +7,7 @@
     "classPostLimit": 2,
     "homeworkAuthor": "그래그래그레이스",
     "recentPolicy": "author-and-homework-signal-per-class-limit",
-    "refreshCooldownSeconds": 0,
+    "refreshCooldownSeconds": 600,
     "quietHoursStart": 0,
     "quietHoursEnd": 6,
     "timeZone": "Asia/Seoul",
