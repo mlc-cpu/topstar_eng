@@ -111,6 +111,8 @@ npm run serve
 워크플로 파일: `.github/workflows/deploy-pages.yml`
 
 - 15분 간격 체크(`07,22,37,52`분 실행, 00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 실제 수집은 10분 쿨다운 이후에만 수행 + 수동 실행 + `main` 푸시 시 배포
+- 새 배포 실행이 시작되면 이전 Pages 실행은 취소되어 배포 큐가 오래 밀리지 않게 합니다.
+- GitHub Actions 공식 액션은 Node 24 대응 버전으로 고정해 Node 20 deprecation 경고를 피합니다.
 - `public/` 폴더를 GitHub Pages로 게시
 - `[local-sync]` 커밋은 네이버 수집을 다시 실행하지 않고 커밋된 `docs/` 결과물을 그대로 Pages에 배포
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정

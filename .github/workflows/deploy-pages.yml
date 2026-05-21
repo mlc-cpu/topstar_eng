@@ -23,12 +23,9 @@ permissions:
   pages: write
   id-token: write
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -123,7 +120,7 @@ jobs:
 
       - name: Checkout
         if: steps.schedule-guard.outputs.skipped != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Detect prebuilt docs publish
         id: prebuilt
@@ -210,7 +207,7 @@ jobs:
 
       - name: Setup Node
         if: steps.schedule-guard.outputs.skipped != 'true' && steps.prebuilt.outputs.use_prebuilt != 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.4.0
         with:
           node-version: 24
           cache: npm
@@ -450,7 +447,7 @@ jobs:
 
       - name: Upload Pages artifact
         if: steps.schedule-guard.outputs.skipped != 'true'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: ./public
 
@@ -464,6 +461,6 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.0
         with:
           timeout: 1200000
