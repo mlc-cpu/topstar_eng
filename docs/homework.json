@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-21T08:24:59.214Z",
+  "generatedAt": "2026-05-21T10:06:38.858Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -14,8 +14,8 @@
     "pagesUrl": "https://mlc-cpu.github.io/topstar_eng/",
     "shortUrl": "https://is.gd/qDMgMU"
   },
-  "allPostCount": 30,
-  "filteredPostCount": 30,
+  "allPostCount": 31,
+  "filteredPostCount": 31,
   "matchedClassCount": 6,
   "posts": [
     {
@@ -341,6 +341,41 @@
         {
           "id": "114e3891ed1c",
           "text": "R/L"
+        }
+      ]
+    },
+    {
+      "postId": "5574",
+      "title": "Radiant // Thursday, May 21, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5574?boardtype=L&menuid=25&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Radiant",
+      "publishedAt": "2026-05-21T09:57:41.667Z",
+      "postDate": "2026-05-21",
+      "items": [
+        {
+          "id": "410c3a2cee5c",
+          "text": "Unit 7 OO/OO + W.B"
+        },
+        {
+          "id": "22ad3a0dfa42",
+          "text": "Unit 8 OO/OO + S.B + 발음, 강세"
+        },
+        {
+          "id": "53d95d9ff443",
+          "text": "단어 외우기 Day 40영 + 단어 오답 노트"
+        },
+        {
+          "id": "dd680f96c5fe",
+          "text": "문법 : Actual test 오답 노트"
+        },
+        {
+          "id": "aa3529c5917d",
+          "text": "문법 : 142 ~145쪽"
+        },
+        {
+          "id": "3478bfa716f1",
+          "text": "The Wild Robot ~ 88쪽"
         }
       ]
     },
