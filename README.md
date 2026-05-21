@@ -110,7 +110,7 @@ npm run serve
 
 워크플로 파일: `.github/workflows/deploy-pages.yml`
 
-- 5분 간격 체크(`02,07,12,17,22,27,32,37,42,47,52,57`분 실행, 00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 실제 수집은 10분 쿨다운 이후에만 수행 + 수동 실행 + `main` 푸시 시 배포
+- 15분 간격 체크(`07,22,37,52`분 실행, 00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 실제 수집은 10분 쿨다운 이후에만 수행 + 수동 실행 + `main` 푸시 시 배포
 - `public/` 폴더를 GitHub Pages로 게시
 - `[local-sync]` 커밋은 네이버 수집을 다시 실행하지 않고 커밋된 `docs/` 결과물을 그대로 Pages에 배포
 - Repository `Settings > Pages`에서 Source를 `GitHub Actions`로 설정
@@ -152,8 +152,8 @@ scripts/install-local-sync-launchd.sh
 
 - `npm run login`으로 `.state/naver-storage-state.json`을 한 번 저장합니다.
 - 설치 스크립트는 launchd 작업 `com.mullae.topstar-eng-local-sync`를 등록합니다.
-- 기본 5분마다 실행되고, `npm run sync -- --scheduled`의 조용한 시간/쿨다운 정책을 그대로 따릅니다.
-- 변경이 생기면 `docs/`만 커밋하고 `Update homework data [local-sync]` 메시지로 푸시합니다.
+- 기본 15분마다 실행되고, `npm run sync -- --scheduled`의 조용한 시간/쿨다운 정책을 그대로 따릅니다.
+- 숙제 내용이나 정적 파일이 실제로 바뀌면 `docs/`만 커밋하고 `Update homework data [local-sync]` 메시지로 푸시합니다. `generatedAt`만 바뀐 결과는 배포 큐가 밀리지 않도록 버립니다.
 - GitHub Actions는 `[local-sync]` 커밋을 감지하면 네이버 수집을 건너뛰고 `docs/`를 그대로 Pages에 배포합니다.
 - 로그: `.logs/local-sync.log`, `.logs/launchd.out.log`, `.logs/launchd.err.log`
 - 해제: `scripts/uninstall-local-sync-launchd.sh`
@@ -207,7 +207,7 @@ scripts/install-local-sync-launchd.sh
 - `curl -sSL 'https://mlc-cpu.github.io/topstar_eng/homework.json' | jq '{generatedAt, refreshCooldownSeconds: .source.refreshCooldownSeconds, postCount: (.posts|length)}'`
 
 현재 운영 기준:
-- GitHub Actions는 5분 간격으로 상태를 체크하고, 실제 수집은 10분 쿨다운이 지난 경우에만 수행합니다.
+- GitHub Actions는 15분 간격으로 상태를 체크하고, 실제 수집은 10분 쿨다운이 지난 경우에만 수행합니다.
 - GitHub-hosted runner 수집이 네이버 인증에서 막히면 로컬 Mac 게시 모드가 우선 운영 경로입니다.
 - `LOCAL_PUBLISH_MODE=true`이면 GitHub-hosted 스케줄 수집은 실패 로그를 만들지 않고 스킵합니다.
 - 세션은 `NAVER_STORAGE_STATE_JSON` 또는 로컬 `.state/naver-storage-state.json`으로 유지합니다.

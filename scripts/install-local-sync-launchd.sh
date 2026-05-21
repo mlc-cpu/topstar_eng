@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LABEL="com.mullae.topstar-eng-local-sync"
 PLIST="${HOME}/Library/LaunchAgents/${LABEL}.plist"
-INTERVAL_SECONDS="${TOPSTAR_LOCAL_SYNC_INTERVAL_SECONDS:-300}"
+INTERVAL_SECONDS="${TOPSTAR_LOCAL_SYNC_INTERVAL_SECONDS:-900}"
 LOG_DIR="${REPO_DIR}/.logs"
 
 mkdir -p "${HOME}/Library/LaunchAgents" "${LOG_DIR}"

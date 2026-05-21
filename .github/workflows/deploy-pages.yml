@@ -3,7 +3,7 @@ name: Build and Deploy Homework Page
 on:
   workflow_dispatch:
   schedule:
-    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 * * * *"
+    - cron: "7,22,37,52 * * * *"
   push:
     branches:
       - main
@@ -465,3 +465,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 1200000

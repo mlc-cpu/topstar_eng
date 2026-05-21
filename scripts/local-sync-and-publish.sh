@@ -53,6 +53,12 @@ if git diff --quiet -- docs; then
   exit 0
 fi
 
+if ! node scripts/should-publish-docs.js; then
+  echo "discarding docs changes that do not affect published homework content"
+  git restore -- docs
+  exit 0
+fi
+
 npm run validate
 
 git add docs
