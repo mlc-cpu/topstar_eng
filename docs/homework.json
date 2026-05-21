@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-21T07:44:06.344Z",
+  "generatedAt": "2026-05-21T07:54:21.145Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -279,6 +279,41 @@
       ]
     },
     {
+      "postId": "5573",
+      "title": "Champion // Thursday, May 21, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5573?boardtype=L&menuid=41&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Champion",
+      "publishedAt": "2026-05-21T07:49:12.263Z",
+      "postDate": "2026-05-21",
+      "items": [
+        {
+          "id": "d114d8ade95a",
+          "text": "Midas 목 O/OO 토 O녹음"
+        },
+        {
+          "id": "0aa7a2315ba6",
+          "text": "STWS 23쪽"
+        },
+        {
+          "id": "62b46ad27ab5",
+          "text": "Plants Cant Jump, Land of Ice 토O녹음"
+        },
+        {
+          "id": "8ac584f1c67e",
+          "text": "SSB 24쪽 OOO듣기"
+        },
+        {
+          "id": "e016a47dc24a",
+          "text": "Voca"
+        },
+        {
+          "id": "1d4639b289bc",
+          "text": "R/L"
+        }
+      ]
+    },
+    {
       "postId": "5548",
       "title": "Champ // Tuesday, May 19, 2026",
       "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5548?boardtype=L&menuid=41&referrerAllArticles=false",
@@ -306,41 +341,6 @@
         {
           "id": "114e3891ed1c",
           "text": "R/L"
-        }
-      ]
-    },
-    {
-      "postId": "5513",
-      "title": "Champ // Thursday, May 14, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5513?boardtype=L&menuid=41&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Champion",
-      "publishedAt": "2026-05-14T07:48:27.017Z",
-      "postDate": "2026-05-14",
-      "items": [
-        {
-          "id": "67500595989b",
-          "text": "Fox and His Big Wish 목 OO/OO 토 O/O"
-        },
-        {
-          "id": "948625c03072",
-          "text": "King Midas 목 O듣기 토 O듣기"
-        },
-        {
-          "id": "aae32b82a3e0",
-          "text": "SSB 6,10,14 OO듣기"
-        },
-        {
-          "id": "348572bc16be",
-          "text": "게임판 - 게임하기 $_____"
-        },
-        {
-          "id": "1cc506e93340",
-          "text": "Voca"
-        },
-        {
-          "id": "7f63ea07103a",
-          "text": "R/L 7. 집에 안쓰는 물건 가져오기"
         }
       ]
     },
