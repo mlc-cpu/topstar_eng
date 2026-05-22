@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T01:32:48.694Z",
+  "generatedAt": "2026-05-22T06:16:22.993Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -18,6 +18,41 @@
   "filteredPostCount": 30,
   "matchedClassCount": 6,
   "posts": [
+    {
+      "postId": "5583",
+      "title": "ACE // Friday, May 22, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5583?boardtype=L&menuid=38&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Ace",
+      "publishedAt": "2026-05-22T06:12:46.980Z",
+      "postDate": "2026-05-22",
+      "items": [
+        {
+          "id": "f87c2ed44f6b",
+          "text": "Picnic OO/OO"
+        },
+        {
+          "id": "3004a71a3ac8",
+          "text": "STWS 43쪽 단어 공책쓰기 영어3, 한글2번"
+        },
+        {
+          "id": "db5571391c98",
+          "text": "STWS 46쪽 풀기"
+        },
+        {
+          "id": "425d35058cea",
+          "text": "SSB 25쪽 OO영상 녹화 (안보고 해보기)"
+        },
+        {
+          "id": "096fcbe42970",
+          "text": "SSB 25쪽 발표"
+        },
+        {
+          "id": "6470d04cdc47",
+          "text": "Voca 7.R/L"
+        }
+      ]
+    },
     {
       "postId": "5559",
       "title": "ACE // Wednesday, May 20, 2026",
@@ -41,37 +76,6 @@
         },
         {
           "id": "c6fbb0dcb328",
-          "text": "R/L"
-        }
-      ]
-    },
-    {
-      "postId": "5537",
-      "title": "ACE // Monday, May 18, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5537?boardtype=L&menuid=38&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Ace",
-      "publishedAt": "2026-05-18T06:13:01.413Z",
-      "postDate": "2026-05-18",
-      "items": [
-        {
-          "id": "43c6a4cff8ad",
-          "text": "Mike and Spike OO/OO"
-        },
-        {
-          "id": "4081c404de03",
-          "text": "STWS 41,42 쪽"
-        },
-        {
-          "id": "841e2569ea2a",
-          "text": "SSB 20~23 O/O녹음"
-        },
-        {
-          "id": "d2a9676696fc",
-          "text": "Voca"
-        },
-        {
-          "id": "e1b8f17438d3",
           "text": "R/L"
         }
       ]
