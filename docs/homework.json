@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T06:16:22.993Z",
+  "generatedAt": "2026-05-22T07:47:35.798Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -14,8 +14,8 @@
     "pagesUrl": "https://mlc-cpu.github.io/topstar_eng/",
     "shortUrl": "https://is.gd/qDMgMU"
   },
-  "allPostCount": 30,
-  "filteredPostCount": 30,
+  "allPostCount": 31,
+  "filteredPostCount": 31,
   "matchedClassCount": 6,
   "posts": [
     {
@@ -81,6 +81,45 @@
       ]
     },
     {
+      "postId": "5585",
+      "title": "STAR // Friday, May 22, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5585?boardtype=L&menuid=30&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Star",
+      "publishedAt": "2026-05-22T07:39:11.977Z",
+      "postDate": "2026-05-22",
+      "items": [
+        {
+          "id": "d9740c56e511",
+          "text": "** 숙제 카페에 올리기 - 말머리 (이름)"
+        },
+        {
+          "id": "f1d80790e3ec",
+          "text": "Unit 15 OO/OO + W.B + 해석"
+        },
+        {
+          "id": "a86752778728",
+          "text": "Unit 16 OO/OO + S.B"
+        },
+        {
+          "id": "7de934e0c059",
+          "text": "단어 외우기 + 오답노트"
+        },
+        {
+          "id": "cd18932ecc10",
+          "text": "문법 : 31쪽 표 - 공책 쓰기"
+        },
+        {
+          "id": "10bdca0bd974",
+          "text": "문법 : 30 ~ 34 풀기"
+        },
+        {
+          "id": "a66f0181cc65",
+          "text": "R/L"
+        }
+      ]
+    },
+    {
       "postId": "5560",
       "title": "STAR // Wednesday, May 20, 2026",
       "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5560?boardtype=L&menuid=30&referrerAllArticles=false",
@@ -108,41 +147,6 @@
         {
           "id": "3e27e4c6e56c",
           "text": "R.L"
-        }
-      ]
-    },
-    {
-      "postId": "5539",
-      "title": "STAR // Monday, May 18, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5539?boardtype=L&menuid=30&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Star",
-      "publishedAt": "2026-05-18T07:30:11.350Z",
-      "postDate": "2026-05-18",
-      "items": [
-        {
-          "id": "16271625c698",
-          "text": "Unit 13 OO/OO + W.B + 해석"
-        },
-        {
-          "id": "6b40c0820bce",
-          "text": "Unit 14 OO/OO + S.B + 발음, 강세"
-        },
-        {
-          "id": "bd3432edff75",
-          "text": "단어 오답노트 + 단어 외우기"
-        },
-        {
-          "id": "394f08fafd96",
-          "text": "문법 : 22 ~ 23 오답 노트"
-        },
-        {
-          "id": "5735e008742c",
-          "text": "문법 : 24 ~ 27 풀기"
-        },
-        {
-          "id": "e0a76092c9e1",
-          "text": "R/L 2권"
         }
       ]
     },
