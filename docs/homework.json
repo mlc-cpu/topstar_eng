@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T08:58:32.298Z",
+  "generatedAt": "2026-05-22T10:29:45.491Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -14,8 +14,8 @@
     "pagesUrl": "https://mlc-cpu.github.io/topstar_eng/",
     "shortUrl": "https://is.gd/qDMgMU"
   },
-  "allPostCount": 31,
-  "filteredPostCount": 31,
+  "allPostCount": 32,
+  "filteredPostCount": 32,
   "matchedClassCount": 6,
   "posts": [
     {
@@ -217,6 +217,37 @@
       ]
     },
     {
+      "postId": "5588",
+      "title": "PEAK // Friday, May 22, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5588?boardtype=L&menuid=12&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Peak",
+      "publishedAt": "2026-05-22T10:25:01.000Z",
+      "postDate": "2026-05-22",
+      "items": [
+        {
+          "id": "e9e8e7c2d59f",
+          "text": "독해 Unit 11 OO/OO S.B ~82쪽 까지"
+        },
+        {
+          "id": "d2cf977e16d2",
+          "text": "문법 : W.B 9 ~ 12 오답 노트"
+        },
+        {
+          "id": "eb2160a9d74f",
+          "text": "문법 : W.B 13 ~ 16 쪽"
+        },
+        {
+          "id": "60517036961c",
+          "text": "단어 오답노트 + Day 18 문장쓰기"
+        },
+        {
+          "id": "0a3f4dd72c62",
+          "text": "MTH # 20 Summary"
+        }
+      ]
+    },
+    {
       "postId": "5564",
       "title": "PEAK // Wednesday, May 20, 2026",
       "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5564?boardtype=L&menuid=12&referrerAllArticles=false",
@@ -244,41 +275,6 @@
         {
           "id": "77082e639b93",
           "text": "문법 9 ~ 12"
-        }
-      ]
-    },
-    {
-      "postId": "5544",
-      "title": "PEAK // Monday, May 18, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5544?boardtype=L&menuid=12&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Peak",
-      "publishedAt": "2026-05-18T10:14:12.617Z",
-      "postDate": "2026-05-18",
-      "items": [
-        {
-          "id": "ac259c74014b",
-          "text": "Unit 9 OO/OO + S.B ~70쪽"
-        },
-        {
-          "id": "c953a51e3aed",
-          "text": "Unit 9 해석"
-        },
-        {
-          "id": "c57519f83ae0",
-          "text": "Unit 10 S.B OO/OO + ~74쪽"
-        },
-        {
-          "id": "4efa89fabe6d",
-          "text": "문법 : 오답노트"
-        },
-        {
-          "id": "756a5642c4f1",
-          "text": "문법 : W.B ~ 8쪽"
-        },
-        {
-          "id": "52046982e593",
-          "text": "단어 : 오답노트 + Day 17 문장쓰기"
         }
       ]
     },
