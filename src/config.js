@@ -23,6 +23,7 @@ export const config = {
   boardUrl: process.env.NAVER_CAFE_BOARD_URL?.trim() ?? "",
   headless: toBool(process.env.HEADLESS, true),
   requireLogin: toBool(process.env.REQUIRE_LOGIN, true),
+  browserFallback: toBool(process.env.BROWSER_FALLBACK, true),
   maxPosts: toInt(process.env.MAX_POSTS, 80),
   detailConcurrency: Math.min(8, Math.max(1, toInt(process.env.DETAIL_CONCURRENCY, 4))),
   classPostLimit: Math.max(1, toInt(process.env.CLASS_POST_LIMIT, 2)),

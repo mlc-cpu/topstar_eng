@@ -1152,6 +1152,12 @@ export async function collectHomeworkPosts() {
     console.warn(`[collect] http api collector failed: ${error.message}`);
   }
 
+  if (!config.browserFallback) {
+    throw new Error(
+      `HTTP API collector failed and browser fallback is disabled. api=${apiError?.message || "unknown"}`
+    );
+  }
+
   try {
     const browserPosts = await collectHomeworkPostsViaBrowser({
       forceCredentialLogin: isLoginRequiredError(apiError),

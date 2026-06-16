@@ -75,6 +75,7 @@ cp .env.example .env
 - `ALLOW_STALE_FALLBACK_DEPLOY=false`
 - `NAVER_SESSION_REFRESH_HOUR=7`
 - `REQUIRE_LOGIN=true`
+- `BROWSER_FALLBACK=true`
 - `LOCAL_AUTO_SYNC=false`
 
 3. 로그인 세션 저장(권장)
@@ -112,6 +113,8 @@ npm run serve
 
 - 15분 간격 체크(`07,22,37,52`분 실행, 00:00-06:00 KST 자동 수집 스킵, 스케줄 실행마다 0~240초 랜덤 지연) + 실제 수집은 10분 쿨다운 이후에만 수행 + 수동 실행 + `main` 푸시 시 배포
 - 새 배포 실행이 시작되면 이전 Pages 실행은 취소되어 배포 큐가 오래 밀리지 않게 합니다.
+- GitHub 스케줄 기본값은 `BROWSER_FALLBACK=false`입니다. 수집은 저장된 네이버 쿠키/스토리지 세션을 이용한 HTTP API 경로로 먼저 수행하고, Playwright 브라우저 설치는 기본 스케줄에서 건너뜁니다.
+- build job은 최대 20분, 실제 수집 단계는 최대 8분, 선택적 Playwright 설치는 최대 5분으로 제한해 장시간 멈춘 실행이 자동 업데이트를 막지 않게 합니다.
 - GitHub Actions 공식 액션은 Node 24 대응 버전으로 고정해 Node 20 deprecation 경고를 피합니다.
 - `public/` 폴더를 GitHub Pages로 게시
 - `[local-sync]` 커밋은 네이버 수집을 다시 실행하지 않고 커밋된 `docs/` 결과물을 그대로 Pages에 배포
@@ -131,9 +134,9 @@ npm run serve
 
 자동수집을 최대한 안정적으로 유지하려면:
 - `NAVER_COOKIE_HEADER` 또는 `NAVER_STORAGE_STATE_JSON`을 우선 유지 (HTTP API 본문 수집에 사용)
-- `NAVER_ID` + `NAVER_PASSWORD`는 보조 fallback으로 함께 설정
-- 세션이 만료되면 GitHub Actions가 보조 계정 정보로 재로그인하고 새 세션을 다시 저장
-- 매일 `NAVER_SESSION_REFRESH_HOUR`시 02분(KST 기본 07:02)에 저장된 세션을 사전 갱신하고, 성공하면 Secret을 다시 저장
+- `NAVER_ID` + `NAVER_PASSWORD`는 수동 복구용 보조값으로 함께 설정
+- GitHub 기본 스케줄은 네이버 보안 화면/캡차에 걸리는 브라우저 로그인을 시도하지 않습니다. 세션이 만료되면 실패를 빠르게 드러내고, `npm run login`으로 새 세션을 만들어 Secret을 갱신합니다.
+- `BROWSER_FALLBACK=true`를 GitHub Variable로 명시한 경우에만 Playwright 브라우저 설치와 세션 사전 갱신을 시도합니다.
 - 생성된 `homework.json`이 비어 있거나 필수 필드가 깨지면 배포 전에 실패 처리
 - 워크플로는 인증정보를 필요한 단계에만 주입하고, 실행 후 세션 파일을 즉시 삭제
 - 2FA/캡차 등으로 자동 로그인이 막힐 때만 `npm run login`으로 새 세션을 만든 뒤 `NAVER_STORAGE_STATE_JSON`을 갱신
@@ -190,6 +193,7 @@ scripts/install-local-sync-launchd.sh
 - `ALLOW_STALE_FALLBACK_DEPLOY` (기본 `false`)
 - `LOCAL_PUBLISH_MODE` (로컬 Mac 게시 모드 사용 시 `true`; GitHub-hosted 스케줄 수집은 스킵)
 - `NAVER_SESSION_REFRESH_HOUR` (기본 `7`, KST 기준)
+- `BROWSER_FALLBACK` (GitHub 기본 `false`; `true`일 때만 Playwright 설치/브라우저 fallback/세션 refresh 시도)
 
 ## 운영 시 주의
 

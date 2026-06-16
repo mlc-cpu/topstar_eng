@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T10:29:45.491Z",
+  "generatedAt": "2026-06-16T10:43:50.530Z",
   "source": {
     "boardUrl": "https://cafe.naver.com/f-e/cafes/31161638/menus/41?viewType=L",
     "maxPosts": 80,
@@ -14,407 +14,380 @@
     "pagesUrl": "https://mlc-cpu.github.io/topstar_eng/",
     "shortUrl": "https://is.gd/qDMgMU"
   },
-  "allPostCount": 32,
-  "filteredPostCount": 32,
+  "allPostCount": 30,
+  "filteredPostCount": 30,
   "matchedClassCount": 6,
   "posts": [
     {
-      "postId": "5583",
-      "title": "ACE // Friday, May 22, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5583?boardtype=L&menuid=38&referrerAllArticles=false",
+      "postId": "5764",
+      "title": "ACE // Monday, June 15, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5764?boardtype=L&menuid=38&referrerAllArticles=false",
       "author": "그래그래그레이스",
       "className": "Ace",
-      "publishedAt": "2026-05-22T06:12:46.980Z",
-      "postDate": "2026-05-22",
+      "publishedAt": "2026-06-15T06:14:56.130Z",
+      "postDate": "2026-06-15",
       "items": [
         {
-          "id": "f87c2ed44f6b",
-          "text": "Picnic OO/OO"
+          "id": "072439234be8",
+          "text": "What is in the Hedge? OO/OO"
         },
         {
-          "id": "3004a71a3ac8",
-          "text": "STWS 43쪽 단어 공책쓰기 영어3, 한글2번"
+          "id": "b38118c73d52",
+          "text": "Ways People Live O녹음"
         },
         {
-          "id": "db5571391c98",
-          "text": "STWS 46쪽 풀기"
+          "id": "666440d07722",
+          "text": "STWS 63쪽 공책쓰기 영1, 한1"
         },
         {
-          "id": "425d35058cea",
-          "text": "SSB 25쪽 OO영상 녹화 (안보고 해보기)"
+          "id": "ea5f673ca73c",
+          "text": "SSB 31쪽 O읽기 , O외우기 (녹화 2번)"
         },
         {
-          "id": "096fcbe42970",
-          "text": "SSB 25쪽 발표"
+          "id": "c8004400fcfe",
+          "text": "Voca (반)"
         },
         {
-          "id": "6470d04cdc47",
-          "text": "Voca 7.R/L"
+          "id": "bef99fab1d0d",
+          "text": "R/L"
         }
       ]
     },
     {
-      "postId": "5559",
-      "title": "ACE // Wednesday, May 20, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5559?boardtype=L&menuid=38&referrerAllArticles=false",
+      "postId": "5748",
+      "title": "ACE // Friday, June 12, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5748?boardtype=L&menuid=38&referrerAllArticles=false",
       "author": "그래그래그레이스",
       "className": "Ace",
-      "publishedAt": "2026-05-20T06:19:53.940Z",
-      "postDate": "2026-05-20",
+      "publishedAt": "2026-06-12T06:15:39.890Z",
+      "postDate": "2026-06-12",
       "items": [
         {
-          "id": "fe6b24428e32",
-          "text": "Picnic OO/O + 발음 적기 + i-e 동그라미하기"
+          "id": "acb5f2313135",
+          "text": "On Saturday OO/OO"
         },
         {
-          "id": "fa4165819eb1",
-          "text": "영어 공책 - 끝말잊기 12개 적기 (한글 칸에 한글만)"
+          "id": "bf4998653c3c",
+          "text": "STWS : ~62쪽"
         },
         {
-          "id": "0b5443823eb7",
+          "id": "7e0b81d3f9f4",
+          "text": "STWS : 63쪽 단어 쓰기 (영1, 한1)"
+        },
+        {
+          "id": "d5e2805b8b42",
+          "text": "SSB : 31쪽 쓰기 OOO녹화 (읽기)"
+        },
+        {
+          "id": "acc7e31f1474",
           "text": "Voca"
         },
         {
-          "id": "c6fbb0dcb328",
+          "id": "9309cdcbdfac",
           "text": "R/L"
         }
       ]
     },
     {
-      "postId": "5585",
-      "title": "STAR // Friday, May 22, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5585?boardtype=L&menuid=30&referrerAllArticles=false",
+      "postId": "5765",
+      "title": "STAR // Monday, June 15, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5765?boardtype=L&menuid=30&referrerAllArticles=false",
       "author": "그래그래그레이스",
       "className": "Star",
-      "publishedAt": "2026-05-22T07:39:11.977Z",
-      "postDate": "2026-05-22",
+      "publishedAt": "2026-06-15T07:32:56.217Z",
+      "postDate": "2026-06-15",
       "items": [
         {
-          "id": "d9740c56e511",
-          "text": "** 숙제 카페에 올리기 - 말머리 (이름)"
+          "id": "ab962b4ea76e",
+          "text": "Unit 7 OO/OO + W.B + 해석"
         },
         {
-          "id": "f1d80790e3ec",
-          "text": "Unit 15 OO/OO + W.B + 해석"
+          "id": "e27ab783eac0",
+          "text": "Unit 8 OO/OO + S.B"
         },
         {
-          "id": "a86752778728",
-          "text": "Unit 16 OO/OO + S.B"
-        },
-        {
-          "id": "7de934e0c059",
-          "text": "단어 외우기 + 오답노트"
-        },
-        {
-          "id": "cd18932ecc10",
-          "text": "문법 : 31쪽 표 - 공책 쓰기"
-        },
-        {
-          "id": "10bdca0bd974",
-          "text": "문법 : 30 ~ 34 풀기"
-        },
-        {
-          "id": "a66f0181cc65",
-          "text": "R/L"
-        }
-      ]
-    },
-    {
-      "postId": "5560",
-      "title": "STAR // Wednesday, May 20, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5560?boardtype=L&menuid=30&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Star",
-      "publishedAt": "2026-05-20T07:34:33.450Z",
-      "postDate": "2026-05-20",
-      "items": [
-        {
-          "id": "ffc2caa87cde",
-          "text": "Unit 14 OO/OO + W.B + 해석"
-        },
-        {
-          "id": "44023ae2285f",
-          "text": "Unit 15 OO/OO + S.B + 발음, 강세"
-        },
-        {
-          "id": "e33b52f49260",
-          "text": "단어 외우기 + 단어 오답 노트"
-        },
-        {
-          "id": "7bb758e57811",
-          "text": "문법 : 싸인 받기 + 오답 노트"
-        },
-        {
-          "id": "3e27e4c6e56c",
-          "text": "R.L"
-        }
-      ]
-    },
-    {
-      "postId": "5587",
-      "title": "TOP // Friday, May 22, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5587?boardtype=L&menuid=22&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Top",
-      "publishedAt": "2026-05-22T08:58:07.547Z",
-      "postDate": "2026-05-22",
-      "items": [
-        {
-          "id": "b71944ef025c",
-          "text": "Unit 10 OO/OO + W.B"
-        },
-        {
-          "id": "943f9abfc349",
-          "text": "Unit 11 OO/OO + S.B +발음 강세"
-        },
-        {
-          "id": "4e7336cc34f3",
-          "text": "단어 오답 노트 + 단어 외우기"
-        },
-        {
-          "id": "d3a6d397dcb2",
-          "text": "문법 : 30 ~ 34쪽 + 눈사람 외워오기 (시험)"
-        },
-        {
-          "id": "8eb59f4f8d2d",
-          "text": "R/L 2권"
-        }
-      ]
-    },
-    {
-      "postId": "5562",
-      "title": "TOP // Wednesday, May 20, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5562?boardtype=L&menuid=22&referrerAllArticles=false",
-      "author": "그래그래그레이스",
-      "className": "Top",
-      "publishedAt": "2026-05-20T08:56:59.470Z",
-      "postDate": "2026-05-20",
-      "items": [
-        {
-          "id": "f8304e28aa27",
-          "text": "Unit 9 OO/OO + W.B"
-        },
-        {
-          "id": "2466604a0d8f",
-          "text": "Unit 10 OO/OO + S.B + 발음, 강세"
-        },
-        {
-          "id": "1b652e199b5c",
+          "id": "3dbb1d155aec",
           "text": "단어 외우기 + 오답 노트"
         },
         {
-          "id": "39c7c9607417",
-          "text": "문법 : 오노 24 ~ 27 쪽 (세세한)"
+          "id": "9a6ee74e1c27",
+          "text": "문법 : W.S - 4장 녹화 보내기"
         },
         {
-          "id": "1006ad5db8fd",
+          "id": "33f088e17ba8",
+          "text": "문법 : 46 ~ 47쪽"
+        },
+        {
+          "id": "a30e07817e62",
           "text": "R/L"
-        },
-        {
-          "id": "0bb585e49b66",
-          "text": "charter 조사하기, 서울이 시로 인정된 날 조사하기"
         }
       ]
     },
     {
-      "postId": "5588",
-      "title": "PEAK // Friday, May 22, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5588?boardtype=L&menuid=12&referrerAllArticles=false",
+      "postId": "5750",
+      "title": "STAR // Friday, June 12, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5750?boardtype=L&menuid=30&referrerAllArticles=false",
       "author": "그래그래그레이스",
-      "className": "Peak",
-      "publishedAt": "2026-05-22T10:25:01.000Z",
-      "postDate": "2026-05-22",
+      "className": "Star",
+      "publishedAt": "2026-06-12T07:35:47.523Z",
+      "postDate": "2026-06-12",
       "items": [
         {
-          "id": "e9e8e7c2d59f",
-          "text": "독해 Unit 11 OO/OO S.B ~82쪽 까지"
+          "id": "d0d3faf9324b",
+          "text": "Unit 6 OO/OO + W.B + 해석"
         },
         {
-          "id": "d2cf977e16d2",
-          "text": "문법 : W.B 9 ~ 12 오답 노트"
+          "id": "a304d7b6c32b",
+          "text": "Unit 7 OO/OO + S.B"
         },
         {
-          "id": "eb2160a9d74f",
-          "text": "문법 : W.B 13 ~ 16 쪽"
+          "id": "51b3fb9bcf0b",
+          "text": "단어 외우기 + 단어 오답노트"
         },
         {
-          "id": "60517036961c",
-          "text": "단어 오답노트 + Day 18 문장쓰기"
+          "id": "0e5be32c5e7b",
+          "text": "문법 : 워크시트 2장 녹화 (긍,부,의) - 영상 4개"
         },
         {
-          "id": "0a3f4dd72c62",
-          "text": "MTH # 20 Summary"
+          "id": "f2b7b20e76b1",
+          "text": "R/L"
         }
       ]
     },
     {
-      "postId": "5564",
-      "title": "PEAK // Wednesday, May 20, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5564?boardtype=L&menuid=12&referrerAllArticles=false",
+      "postId": "5769",
+      "title": "TOP // Monday, June 15, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5769?boardtype=L&menuid=22&referrerAllArticles=false",
       "author": "그래그래그레이스",
-      "className": "Peak",
-      "publishedAt": "2026-05-20T10:16:13.337Z",
-      "postDate": "2026-05-20",
+      "className": "Top",
+      "publishedAt": "2026-06-15T08:54:55.680Z",
+      "postDate": "2026-06-15",
       "items": [
         {
-          "id": "d4e239a60f60",
-          "text": "Unit 10 OO/OO + W.B + 해석"
+          "id": "1f1191143854",
+          "text": "Unit 18 OO/OO + W.B"
         },
         {
-          "id": "262173f18231",
-          "text": "Unit 10 S.B ~끝 (Voca 까지)"
+          "id": "4d5fed2d8075",
+          "text": "Unit 19 OO/OO + S.B + 발음, 강세"
         },
         {
-          "id": "aa6ee754cd8b",
-          "text": "단어 외우기 Day 18, 19 + 단어 오답 노트"
+          "id": "37cf18ceaf92",
+          "text": "단어 외우기 + 단어 오답 노트"
         },
         {
-          "id": "a9596c321f54",
-          "text": "문법 오답 노트 4~8 쪽 오답 노트"
+          "id": "2e254d93fbe8",
+          "text": "문법 : 58 ~63 O녹음 (우+영) 틀*3번"
         },
         {
-          "id": "77082e639b93",
-          "text": "문법 9 ~ 12"
+          "id": "b3cfe6b08a5b",
+          "text": "문법 : Actual test"
+        },
+        {
+          "id": "1a3c5757a44a",
+          "text": "R/L"
         }
       ]
     },
     {
-      "postId": "5573",
-      "title": "Champion // Thursday, May 21, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5573?boardtype=L&menuid=41&referrerAllArticles=false",
+      "postId": "5772",
+      "title": "PEAK // Monday, June 15, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5772?boardtype=L&menuid=12&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Peak",
+      "publishedAt": "2026-06-15T10:18:50.170Z",
+      "postDate": "2026-06-15",
+      "items": [
+        {
+          "id": "cc51e38197bc",
+          "text": "Unit 16 SB OO/OO + 발음, 강세"
+        },
+        {
+          "id": "4e3c046fc37c",
+          "text": "단어 오답 노트 + Day 22 문장"
+        },
+        {
+          "id": "2a475a955207",
+          "text": "MTH # 24 Chapter 1 ~ 5 단어, Summary"
+        }
+      ]
+    },
+    {
+      "postId": "5752",
+      "title": "PEAK // Friday, June 12, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5752?boardtype=L&menuid=12&referrerAllArticles=false",
+      "author": "그래그래그레이스",
+      "className": "Peak",
+      "publishedAt": "2026-06-12T10:24:07.653Z",
+      "postDate": "2026-06-12",
+      "items": [
+        {
+          "id": "fbbb0dd2e25b",
+          "text": "Unit 13, 14, 15 S.B O/O"
+        },
+        {
+          "id": "2093c916087c",
+          "text": "Unit 15 W.B + 해석"
+        },
+        {
+          "id": "602f3e8c6e72",
+          "text": "단어 Day 22, 23 + 오답 노트"
+        },
+        {
+          "id": "1b87a60ab3f4",
+          "text": "문법 : 130 ~ 133 풀기"
+        },
+        {
+          "id": "39b17a27d1e5",
+          "text": "MTH #23 단어 + Summary"
+        }
+      ]
+    },
+    {
+      "postId": "5775",
+      "title": "Champ // Tuesdsay, June 16, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5775?boardtype=L&menuid=41&referrerAllArticles=false",
       "author": "그래그래그레이스",
       "className": "Champion",
-      "publishedAt": "2026-05-21T07:49:12.263Z",
-      "postDate": "2026-05-21",
+      "publishedAt": "2026-06-16T07:50:09.480Z",
+      "postDate": "2026-06-16",
       "items": [
         {
-          "id": "d114d8ade95a",
-          "text": "Midas 목 O/OO 토 O녹음"
+          "id": "48c9ea87bda2",
+          "text": "Mark's Big Day 화 OO듣기 수 O듣기"
         },
         {
-          "id": "0aa7a2315ba6",
-          "text": "STWS 23쪽"
+          "id": "bc6588b44e4c",
+          "text": "Rich Gets Big 화O녹음"
         },
         {
-          "id": "62b46ad27ab5",
-          "text": "Plants Cant Jump, Land of Ice 토O녹음"
+          "id": "06522723bc2c",
+          "text": "A Butterfly Grows 수O녹음"
         },
         {
-          "id": "8ac584f1c67e",
-          "text": "SSB 24쪽 OOO듣기"
+          "id": "4415ee55ccbc",
+          "text": "STWS 16쪽 공책쓰기 영2 한1"
         },
         {
-          "id": "e016a47dc24a",
+          "id": "1dd203d54558",
+          "text": "SSB 42, 43쪽 OO듣기"
+        },
+        {
+          "id": "2759559c255d",
           "text": "Voca"
         },
         {
-          "id": "1d4639b289bc",
+          "id": "7c9678bbe570",
           "text": "R/L"
         }
       ]
     },
     {
-      "postId": "5548",
-      "title": "Champ // Tuesday, May 19, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5548?boardtype=L&menuid=41&referrerAllArticles=false",
+      "postId": "5735",
+      "title": "Champ // Thursday, June 11, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5735?boardtype=L&menuid=41&referrerAllArticles=false",
       "author": "그래그래그레이스",
       "className": "Champion",
-      "publishedAt": "2026-05-19T07:58:00.730Z",
-      "postDate": "2026-05-19",
+      "publishedAt": "2026-06-11T07:49:12.663Z",
+      "postDate": "2026-06-11",
       "items": [
         {
-          "id": "213a58f10308",
-          "text": "King Midas 화 OO/OO 수 O/O"
+          "id": "14a359bba866",
+          "text": "Ann's Trip to the Stars 목 OO/OO 토 O녹화"
         },
         {
-          "id": "e1fcb1fd14be",
-          "text": "S.T.W.S 22쪽"
+          "id": "9079b56ef821",
+          "text": "A Butterfly Grows 토O녹화"
         },
         {
-          "id": "94579130d6ad",
-          "text": "SWB (Speaking Work Book) 5쪽 ~ 8쪽"
+          "id": "ff3eb978e125",
+          "text": "STWS 13, 14, 15 쪽"
         },
         {
-          "id": "5da6bdd3e405",
+          "id": "a675af88bea2",
+          "text": "하루일과 W.S 2장 O 녹화 (at , on)"
+        },
+        {
+          "id": "6a0e4de3928c",
           "text": "Voca"
         },
         {
-          "id": "114e3891ed1c",
+          "id": "5f6250122aa7",
           "text": "R/L"
         }
       ]
     },
     {
-      "postId": "5574",
-      "title": "Radiant // Thursday, May 21, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5574?boardtype=L&menuid=25&referrerAllArticles=false",
+      "postId": "5781",
+      "title": "Radiant // Tuesday, June 16, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5781?boardtype=L&menuid=25&referrerAllArticles=false",
       "author": "그래그래그레이스",
       "className": "Radiant",
-      "publishedAt": "2026-05-21T09:57:41.667Z",
-      "postDate": "2026-05-21",
+      "publishedAt": "2026-06-16T10:05:40.187Z",
+      "postDate": "2026-06-16",
       "items": [
         {
-          "id": "410c3a2cee5c",
-          "text": "Unit 7 OO/OO + W.B"
+          "id": "cc5c3b45ee64",
+          "text": "Unit 1 OO/OO + SB + 발음, 강세"
         },
         {
-          "id": "22ad3a0dfa42",
-          "text": "Unit 8 OO/OO + S.B + 발음, 강세"
+          "id": "691094d7b181",
+          "text": "문법 : 166 ~ 169 오답 노트"
         },
         {
-          "id": "53d95d9ff443",
-          "text": "단어 외우기 Day 40영 + 단어 오답 노트"
+          "id": "d9349157c50e",
+          "text": "문법 : Actual test + W.B ~3쪽"
         },
         {
-          "id": "dd680f96c5fe",
-          "text": "문법 : Actual test 오답 노트"
+          "id": "5e4a93babc90",
+          "text": "Wild Robot : Chapter 62"
         },
         {
-          "id": "aa3529c5917d",
-          "text": "문법 : 142 ~145쪽"
-        },
-        {
-          "id": "3478bfa716f1",
-          "text": "The Wild Robot ~ 88쪽"
+          "id": "ba040c68e0b0",
+          "text": "단어 오답 노트 + 단어 Day 29"
         }
       ]
     },
     {
-      "postId": "5551",
-      "title": "Radiant // Tuesday, May 19, 2026",
-      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5551?boardtype=L&menuid=25&referrerAllArticles=false",
+      "postId": "5739",
+      "title": "RADIANT// Thursday, June 11, 2026",
+      "url": "https://cafe.naver.com/f-e/cafes/31161638/articles/5739?boardtype=L&menuid=25&referrerAllArticles=false",
       "author": "그래그래그레이스",
       "className": "Radiant",
-      "publishedAt": "2026-05-19T09:06:54.810Z",
-      "postDate": "2026-05-19",
+      "publishedAt": "2026-06-11T10:01:21.983Z",
+      "postDate": "2026-06-11",
       "items": [
         {
-          "id": "3926a843c9cf",
-          "text": "Mid-term Test 싸인 받기 + 틀린 사람 녹음 2번"
+          "id": "492c88a508f5",
+          "text": "Video + W.S"
         },
         {
-          "id": "b2a44936acf2",
-          "text": "Video - W.B"
+          "id": "3d3ed975ad46",
+          "text": "독해 W.B ~ 끝까지"
         },
         {
-          "id": "5f1ddb53e6f5",
-          "text": "Unit 7 OO/OO + S.B + 발음, 강세"
+          "id": "fb1d03ab75f9",
+          "text": "새책 가져오기"
         },
         {
-          "id": "cc5cb416a63d",
-          "text": "문법 : 132 - 135 오답 노트"
+          "id": "efc22e97ca92",
+          "text": "독해 시험지 고치고 싸인 받기"
         },
         {
-          "id": "add4b4587785",
-          "text": "문법 : 136 ~ 140 쪽"
+          "id": "750f8e8f4af6",
+          "text": "문법 : 장소의 전치사 오답 노트"
         },
         {
-          "id": "152c9f27289f",
-          "text": "Wild Robot - Chapter 26까지 단어, Summary"
+          "id": "de163a6c101a",
+          "text": "문법 : 166 ~ 169쪽"
         },
         {
-          "id": "5ff274c0f65e",
-          "text": "단어 : 39 문장 시험 + 오답노트"
+          "id": "ec063ae06cba",
+          "text": "Robot : Chapter 58"
+        },
+        {
+          "id": "ce7977c38432",
+          "text": "단어 외우기 + 단어 오답 노트"
         }
       ]
     }
